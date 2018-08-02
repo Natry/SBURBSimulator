@@ -6,10 +6,11 @@ import '../../v2.0/char_creator_helper.dart';
 CharCreatorController self;
 //only one session on this page
 Session session;
-void main()
+void main() async
 
 {
   loadNavbar();
+  await globalInit();
   window.onError.listen((Event event){
     ErrorEvent e = event as ErrorEvent;
     //String msg, String url, lineNo, columnNo, error
