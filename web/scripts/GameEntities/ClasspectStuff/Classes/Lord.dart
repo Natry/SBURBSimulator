@@ -159,6 +159,10 @@ class Lord extends SBURBClass {
                 new Quest("The final ${Quest.CONSORT} commander surrenders. The ${Quest.PLAYER1} controls everything now. They are the Lord of all they survey. ")
             ], new RandomReward(), QuestChainFeature.defaultOption), Feature.WAY_LOW)
 
+            ..addFeature(new DenizenQuestChain("Be the Protagonist", [
+                new Quest("The ${Quest.PLAYER2} reaches the entrance to a massive dungeon. They heard rumors that important information could be found at the bottom. After some very confusing puzzles and a couple of strifes, they find themself at the dungeon’s center. A lone, elderly ${Quest.CONSORT} is there to greet the ${Quest.PLAYER2}. He tells the ${Quest.PLAYER2} that ${Quest.DENIZEN} needs to be defeated by a powerful hero, and imparts some clues on how to defeat them. Wait a second, isn’t that the ${Quest.PLAYER1}’s Denizen? The ${Quest.PLAYER2} contacts them and passes on the information they found.  "),
+                new DenizenFightQuest("The ${Quest.PLAYER2} is exploring another dungeon. Deep inside, they enter a large open room, clearly meant for a boss fight. As expected, ${Quest.DENIZEN} emerges from a large hole in the ceiling and lets loose a roar. The ${Quest.PLAYER2} readies themself for a fight, but ${Quest.DENIZEN} takes one glance and immediately goes back into its hole. It looks like ${Quest.DENIZEN} is only interested in fighting the ${Quest.PLAYER1}. The ${Quest.PLAYER2} gives them a call and sits around waiting for them to come. After a few hours, the ${Quest.PLAYER1} has arrived and the strife can finally start.","The ${Quest.PLAYER1} was victorious in his fight against ${Quest.DENIZEN}. The ${Quest.PLAYER2} also helped.","The ${Quest.PLAYER1} fought hard, but was ultimately defeated by ${Quest.DENIZEN}.")
+            ], new DenizenReward(), QuestChainFeature.twoLight), Feature.HIGH)
 
             ,  Theme.MEDIUM);
 

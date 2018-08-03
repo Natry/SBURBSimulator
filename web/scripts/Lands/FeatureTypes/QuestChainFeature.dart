@@ -85,6 +85,11 @@ class QuestChainFeature extends Feature {
         return ret;
     }
 
+    static bool twoLight(List<GameEntity> ps) {
+        bool twit = twoPlayers(ps) && lightPlayer(ps);
+        return twit;
+    }
+
 
     //useful for denizen choices, etc.
     static bool playerIsADick(List<GameEntity> ps) {
