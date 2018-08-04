@@ -1964,7 +1964,7 @@ class Player extends GameEntity{
         if(session.mutator.lightField) return session.mutator.inSpotLight;
          //space player can ONLY be helped by knight, and knight prioritizes this
          if(aspect == Aspects.SPACE){//this shit is so illegal
-             helper = findClassPlayer(players, SBURBClassManager.KNIGHT);
+             helper = findHelpPlayer(players);
              //can help others 100% of the time if foreign player. you can like, fly and shit with your end game items.
              if(helper != null && helper.id != this.id && (helper.canHelp())){ //a knight of space can't help themselves.
                  ////;
