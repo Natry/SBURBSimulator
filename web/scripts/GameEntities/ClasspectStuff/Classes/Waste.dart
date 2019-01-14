@@ -165,6 +165,14 @@ class Waste extends SBURBClass {
                 new Quest("Welp. Whatever original reason the ${Quest.PLAYER1} had for finding other sessions has fallen by the wayside. They've gotten completely distracted helping out sessions with no alpha and accidentally dooming the fuck out of everyone when they make a typo in some code.   I thought these were just simulations? Fuck Paradox Space. ")
             ], new ItemReward(items), QuestChainFeature.defaultOption), Feature.LOW)
 
+            ..addFeature(new PostDenizenQuestChain("Wasting Time", [
+                new Quest("The ${Quest.PLAYER1} finds an unusual rock formation. They examine it from every possible angle to find a secret meaning. In the end it turns out to be an interesting rock and nothing more."),
+                new Quest("The ${Quest.PLAYER1} is stopped by a young ${Quest.CONSORT} that asks them to watch clouds together. The ${Quest.PLAYER1} spends a few hours with the ${Quest.CONSORT} interpreting the shapes in the clouds."),
+                new Quest("The ${Quest.PLAYER1} uses the alchemiter to create a number of dream video game fusions. They spend many hours playing them all."),
+                new Quest("After waking up from a nap, the ${Quest.PLAYER1} turns over and goes right back to sleep. They’re just not feeling like doing anything right now."),
+                new Quest("An elderly ${Quest.CONSORT} calls out to the ${Quest.PLAYER1}; apparently there was a dangerous monster that the ${Quest.CONSORT}s wanted the ${Quest.PLAYER1} to defeat, but the problem solved itself when the monster tripped off a cliffside. Was there actually a point to what the ${Quest.PLAYER1} was doing? Nope, they’re just really bad at using their time wisely.")
+            ], new Reward(), QuestChainFeature.timePlayer), Feature.WAY_LOW)
+
             ..addFeature(new PostDenizenFrogChain("Waste the Frogs", [
                 new Quest("The ${Quest.DENIZEN} explains um. What? Where did the ${Quest.PLAYER1} go?"),
                 new Quest("The ${Quest.PLAYER1} is sick and tired of being bullied!  If only there was some way they could finally defeat those mean old bullies.   A wizened ${Quest.CONSORT} tells of a legendary artifact that could-- Wait. No. That's so boring.   The ${Quest.PLAYER1} decides to update their highly-indulgent meta work instead."),

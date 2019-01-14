@@ -164,6 +164,11 @@ class Lord extends SBURBClass {
                 new DenizenFightQuest("The ${Quest.PLAYER2} is exploring another dungeon. Deep inside, they enter a large open room, clearly meant for a boss fight. As expected, ${Quest.DENIZEN} emerges from a large hole in the ceiling and lets loose a roar. The ${Quest.PLAYER2} readies themself for a fight, but ${Quest.DENIZEN} takes one glance and immediately goes back into its hole. It looks like ${Quest.DENIZEN} is only interested in fighting the ${Quest.PLAYER1}. The ${Quest.PLAYER2} gives them a call and sits around waiting for them to come. After a few hours, the ${Quest.PLAYER1} has arrived and the strife can finally start.","The ${Quest.PLAYER1} was victorious in his fight against ${Quest.DENIZEN}. The ${Quest.PLAYER2} also helped.","The ${Quest.PLAYER1} fought hard, but was ultimately defeated by ${Quest.DENIZEN}.")
             ], new DenizenReward(), QuestChainFeature.twoLight), Feature.HIGH)
 
+            ..addFeature(new PostDenizenQuestChain("Skip the Boring Details", [
+                new Quest("The ${Quest.PLAYER1} finds a giant pillar, inscribed with a long and arduous quest that the ${Quest.PLAYER1} is destined to complete. However the ${Quest.PLAYER1} isn’t interested on spending so much time on one quest, so they uses their powers and fast forward right to the end. A parade is held in their honor for completing the grand quest that no one got to see happen. A bit unsatisfying, really.")
+            ], new RandomReward(), QuestChainFeature.timePlayer), Feature.WAY_LOW)
+
+
             ,  Theme.MEDIUM);
 
         addTheme(new Theme(<String>["Dutton", "Charles","Fathers","Prophets","Dew"])
