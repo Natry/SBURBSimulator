@@ -239,7 +239,7 @@ class ConsortReward extends Reward {
             text = text.replaceAll("${Reward.PLAYER2}", "${(p2 as Player).htmlTitleBasicNoTip()}");
         }
         text = text.replaceAll("${Reward.PLAYER1}", "${p1.htmlTitleBasicNoTip()}");
-        p1.session.logger.info("AB: Consort reward.");
+       // p1.session.logger.info("AB: Consort reward.");
         super.apply(div, p1, p2, land,text);
     }
 }
@@ -395,7 +395,7 @@ class SpecificCarapaceReward extends Reward {
             p1.session.logger.info("AB: The Carapace ($carapace that should have been triggered by this is dead.");
             text = "The ${p1.htmlTitle()} gets the strangest feeling that something more should be happening now.";
         }else {
-            p1.session.logger.info("AB: A Carapace ($carapace) joins in response to a quest.");
+            //p1.session.logger.info("AB: A Carapace ($carapace) joins in response to a quest.");
 
             text = " The ${p1.htmlTitle()} attracts the attention of a ${carapace.htmlTitle()}. They decide they like the cut of the ${p1.htmlTitle()}'s jib and agree to tag along.";
             if(carapace.partyLeader != null){
@@ -659,6 +659,11 @@ class DreamReward extends Reward {
     void applyProspit(Element div, Player p1, GameEntity p2, Land land) {
        // p1.session.logger.info("getting random carapace for prospit reward");
         bgImage = "Prospit.png";
+        if(p1.session.prospit.name.toLowerCase().contains("sauce")){
+            bgImage = "saucemoon.png";
+        }else if(p1.session.prospit.name.toLowerCase() != "prospit") {
+            bgImage = "unknownmoon.png";
+        }
         //but if they start up a SHENANIGAN we'll want custom text here.
         Carapace companion;
         Carapace activated;
@@ -669,7 +674,7 @@ class DreamReward extends Reward {
 
 
         String text = " The ${p1.htmlTitleBasicNoTip()} is getting pretty popular among Prospitians. ";
-        if(companion != null) {
+        if(companion != null && p1.session.rand.nextDouble() < p1.class_name.companionWeight + p1.aspect.companionWeight) {
             companion.active = true;
             String a  = "A";
             if(companion.name.startsWith(new RegExp("[aeiouAEIOU]"))) a = "An";
@@ -696,13 +701,18 @@ class DreamReward extends Reward {
     void applyDerse(Element div, Player p1, GameEntity p2, Land land) {
         //p1.session.logger.info("getting random carapace for derse reward");
         bgImage = "Derse.png";
+        if(p1.session.derse.name.toLowerCase().contains("sauce")){
+            bgImage = "saucemoon.png";
+        }else if(p1.session.derse.name.toLowerCase() != "derse") {
+            bgImage = "unknownmoon.png";
+        }
         Carapace companion;
         Carapace activated;
         companion = p1.session.derse.partyRandomCarapace;
         activated = p1.session.derse.activateRandomCaparapce;
 
         String text = " The ${p1.htmlTitleBasicNoTip()} is getting pretty popular among Dersites. ";
-        if(companion != null) {
+        if(companion != null && p1.session.rand.nextDouble()<  p1.class_name.companionWeight + p1.aspect.companionWeight) {
             companion.active = true;
 
             String a  = "A";
@@ -727,7 +737,7 @@ class DreamReward extends Reward {
     }
 
     void applyBubbles(Element div, Player p1, GameEntity p2, Land land) {
-        p1.session.logger.info("bubble reward");
+        //p1.session.logger.info("bubble reward");
         bgImage = "dreambubbles.png";
         String text = " The ${p1.htmlTitleBasicNoTip()} is getting used to these Dream Bubbles.";
         p1.addStat(Stats.SANITY, 2); //just a bit better.
@@ -736,7 +746,7 @@ class DreamReward extends Reward {
     }
 
     void applyHorrorTerrors(Element div, Player p1, GameEntity p2, Land land) {
-        p1.session.logger.info("terror reward");
+        //p1.session.logger.info("terror reward");
         bgImage = "horrorterror.png";
         String text = " The ${p1.htmlTitleBasicNoTip()} writhes in agony.";
         p1.corruptionLevelOther += 2; //just a bit.

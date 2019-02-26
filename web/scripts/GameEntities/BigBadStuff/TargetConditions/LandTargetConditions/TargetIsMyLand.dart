@@ -43,7 +43,7 @@ class TargetIsMyLand extends TargetConditionLand {
     }
 
     @override
-    bool conditionForFilter(Land item) {
-        return item.associatedEntities.contains(scene.gameEntity);
+    bool conditionForFilter(Land item,Set<GameEntity> entities) {
+        return !item.associatedEntities.contains(scene.gameEntity);
     }
 }

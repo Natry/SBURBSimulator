@@ -14,7 +14,7 @@ class StrifeBigBad extends Scene {
 		List<GameEntity> possibleTargets = new List<GameEntity>.from(session.activatedNPCS);
 		possibleTargets.addAll(session.players);
 		//get rid of targets that aren't big bads or targets who are dead
-		possibleTargets.removeWhere((GameEntity item) => !item.villain || item.dead || item == gameEntity);
+		possibleTargets.removeWhere((GameEntity item) => !item.villain || item.dead || item == gameEntity || item.active == false);
 		possibleTargets.removeWhere((GameEntity item){
 			Relationship r = gameEntity.getRelationshipWith(item);
 			if(r == null) return false;
@@ -38,6 +38,7 @@ class StrifeBigBad extends Scene {
 		for(GameEntity g in living) {
 			Relationship r = g.getRelationshipWith(bigBad);
 			if(r != null && r.value > Relationship.CRUSHVALUE/2) friendsToRemove.add(g);
+			if(bigBad.companionsCopy.contains(g)) friendsToRemove.add(g);
 		}
 
 		for(GameEntity friend in friendsToRemove) {
@@ -98,6 +99,7 @@ class StrifeBigBad extends Scene {
 		Team pTeam = new Team.withName("The Players",this.session, fighting);
 		pTeam.canAbscond = true;
 		Team dTeam = new Team(this.session, [bigBad]);
+		pTeam.members.removeWhere((GameEntity g) => dTeam.members.contains(g));
 		dTeam.canAbscond = false; //take your fucking medicine
 		Strife strife = new Strife(this.session, [pTeam, dTeam]);
 		strife.startTurn(div);

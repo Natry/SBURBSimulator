@@ -13,44 +13,42 @@ class OhShitFuckWheresTheRing extends Scene {
       div.append(me);
       me.setInnerHtml(getText());
       GameEntity bqowner = session.derseRing == null  ?  null:session.derseRing.owner;
-      GameEntity wqowner =  session.prospitRing == null  ?  null:session.prospitRing.owner;
+      GameEntity wqowner = session.prospitRing == null  ?  null:session.prospitRing.owner;
 
       if(bqowner != null && !bqowner.alliedToPlayers) {
           Element container = new DivElement();
           me.append(container);
           GameEntity blackQueen = session.derse == null  ?  null:session.derse.queen;
-          if(session.mutator.lifeField || (blackQueen.unconditionallyImmortal &&  gameEntity.unconditionallyImmortal)) {
+          if(session.mutator.lifeField || (bqowner.unconditionallyImmortal &&  gameEntity.unconditionallyImmortal)) {
               return wellFuck(div, bqowner, session.derseRing, blackQueen);
-          }else if (blackQueen.dead) {
-              return ohOkay(div, bqowner, session.prospitScepter, blackQueen);
+          }else if (bqowner.dead) {
+              return ohOkay(div, bqowner, session.derseRing, blackQueen);
           }else {
               return startFight(div, bqowner, session.derseRing, blackQueen);
           }
       }
 
-
-
-      if(wqowner != null && !wqowner.alliedToPlayers) {
+      if(wqowner != null && !wqowner.alliedToPlayers && wqowner != bqowner) {
           Element container = new DivElement();
           me.append(container);
           GameEntity whiteQueen = session.prospit == null  ?  null:session.prospit.queen;
 
-          if(session.mutator.lifeField || (whiteQueen.unconditionallyImmortal &&  gameEntity.unconditionallyImmortal)) {
+          if(session.mutator.lifeField || (wqowner.unconditionallyImmortal &&  gameEntity.unconditionallyImmortal)) {
               wellFuck(div, wqowner, session.prospitRing, whiteQueen);
-          }else if (whiteQueen.dead) {
-              return ohOkay(div, wqowner, session.prospitScepter, whiteQueen);
+          }else if (wqowner.dead) {
+              return ohOkay(div, wqowner, session.prospitRing, whiteQueen);
           }else {
               startFight(div, wqowner, session.prospitRing, whiteQueen);
           }
       }
   }
 
-    void ohOkay(Element container, GameEntity target, Scepter scepter, GameEntity whoSHOULDHaveIt) {
+    void ohOkay(Element container, GameEntity target, Ring ring, GameEntity whoSHOULDHaveIt) {
         DivElement div = new DivElement();
         container.append(div);
         String text = "";
         gameEntity.lootCorpse(target);
-        text = "Oh. Huh. The ${target.htmlTitle()} is already dead? The ${gameEntity.htmlTitleWithTip()} just loots the $scepter from their corpse. Easy enough.";
+        text = "Oh. Huh. The ${target.htmlTitleWithTip()} is already dead? The ${gameEntity.htmlTitleWithTip()} just loots the $ring from their corpse. Easy enough.";
         div.setInnerHtml(text);
     }
 
@@ -60,10 +58,11 @@ class OhShitFuckWheresTheRing extends Scene {
         String text = "";
         text = "<br><br>Well. Fuck. After countless hours spent fruitlessly strifing, the ${gameEntity.htmlTitle()} stares blankly at the ${target.htmlTitle()}. The Players need the Ring, but immortality stops things from progressing as Skaia intended. They finally resolve it via a high stakes game of coin flipping. ${target.htmlTitle()} calls heads. ";
         if(rand.nextBool()) {
-            target.sylladex.add(ring);
+            target.lootCorpse(gameEntity);
             text = "$text The coin lands on heads! The ${target.htmlTitleWithTip()} wins! We all agree this is phenomenally stupid. ";
         }else {
             gameEntity.sylladex.add(ring);
+            target.lootCorpse(gameEntity);
             text = "$text The coin lands on tails! The ${gameEntity.htmlTitleWithTip()} wins! We all agree this is phenomenally stupid. ";
         }
         div.setInnerHtml(text);

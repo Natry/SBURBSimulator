@@ -10,11 +10,6 @@ class MakeStrifable extends EffectEntity {
 
 
   @override
-  void copyFromJSON(JSONObject json) {
-    // nothing to do
-  }
-
-  @override
   void syncFormToMe() {
     ////does nothing since i have no personal data
   }
@@ -39,8 +34,8 @@ class MakeStrifable extends EffectEntity {
         if(e.renderable()) renderableTargets.add(e);
         SpanElement death = new SpanElement();
         String text  = "";
-        if(e.canStrife) {
-            text = "${e.htmlTitle()} can now be strifed.";
+        if(!e.canStrife) {
+            text = "${e.htmlTitle()} can now be strifed in boss fights.";
         }else {
             text = "Nothing actually seems to happen to ${e.htmlTitle()}";
         }

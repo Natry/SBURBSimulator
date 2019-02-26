@@ -39,11 +39,16 @@ abstract class AuthorBot extends SimController {
   }
 
   Future<Null> startSessionThenSummarize(Session session) async{
+    //JR from 10/06/2018 says that aB needs to forget data between sessions, yo
+    setHtml(SimController.instance.storyElement, "");
     checkEasterEgg(session);
+    DateTime start = new DateTime.now();
     await session.startSession();
-    print("I think the session stopped!");
-    summarizeSession(session);
-    print("I think i summarized the session!");
+    //print("I think the session stopped!");
+    DateTime end = new DateTime.now();
+    //don't accidentally repeat combo sessions here, i don't know why they return here but they do, separately from their parent
+      summarizeSession(session, end.difference(start));
+   // print("I think i summarized the session!");
   }
 
   @override
@@ -59,7 +64,7 @@ abstract class AuthorBot extends SimController {
       ////;
       needToScratch = false; //can't scratch if skaiai is a frog
       session.stats.makeCombinedSession = false;
-      summarizeSession(session);
+      summarizeSession(session, new Duration());
     }
   }
 
@@ -71,13 +76,18 @@ abstract class AuthorBot extends SimController {
     num dead = sessionSummary.getNumStat("numDead");
     Player strongest = sessionSummary.mvp;
 
+    sessionSummary.bigBadSummary = new BigBadSummary(Session.defaultSession)..fromJSON(sessionSummary.bigBadSummaryJSON.toString());
+
+    if(sessionSummary.bigBadSummary.bigBadsActiveNames.isNotEmpty) quip = "$quip Oh wow, ${sessionSummary.bigBadSummary.bigBadsActiveNames} sure wrecked up the place. ";
+
+
     if(sessionSummary.session_id == 33 || getParameterByName("nepeta",null)  == ":33"){
       quip += "Don't expect any of my reports on those cat trolls to be accurate. They are random as fuck. " ;
       if(window.localStorage.containsKey("catTroll")) {
         quip += "I've seen ${window.localStorage["catTroll"]} cat trolls and it's all your fault. ";
       }
     }
-    print ("is it nepeta? ${getParameterByName("nepeta",null)}");
+    //print ("is it nepeta? ${getParameterByName("nepeta",null)}");
 
     if(sessionSummary.getBoolStat("crashedFromSessionBug")){
       quip += Zalgo.generate("Fuck. Shit crashed hardcore. It's a good thing I'm a flawless robot, or I'd have nightmares from that. Just. Fuck session crashes.  Also, shout out to star.eyes: 'His palms are sweaty, knees weak, arms are heavy. There's vomit on his sweater already, mom's spaghetti'");
@@ -142,11 +152,11 @@ abstract class AuthorBot extends SimController {
   void recoverFromCorruption(Session session) {
     session.logger.info("Recovering from corruption in ab");
     session.simulationComplete("Crashed in AB");
-    summarizeSession(session); //well...THAT session ended
+    summarizeSession(session, new Duration()); //well...THAT session ended
   }
 
   //this will be called once session has ended. it's up to each child to know what to do here.
-  void summarizeSession(Session session);
+  void summarizeSession(Session session, Duration duration);
 
   void summarizeSessionNoFollowup(Session session);
 

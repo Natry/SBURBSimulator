@@ -205,6 +205,7 @@ class Aftermath extends Scene {
         GameEntity wqowner =  session.prospitRing == null  ?  null:session.prospitRing.owner;
 
         if(session.playersHaveRings()) {
+            print("I think the players have the rings");
             if(bqowner != null) {
                 ret = "$ret The  ${session.derseRing.owner.htmlTitle()} helpfully hands over the  ${session.derseRing}.";
             }else {
@@ -221,13 +222,13 @@ class Aftermath extends Scene {
             ret = "The players stare at the Forge in dismay. Although it has been lit, the two RINGS are not available to fully prepare it for the Ultimate Frog. Shit.";
 
             if(bqowner != null) {
-                ret = "$ret The ${session.derseRing.owner.htmlTitle()} has their grubby mits on the ${session.derseRing}.";
+                ret = "$ret The ${session.derseRing.owner.htmlTitleWithTip()} has their grubby mits on the ${session.derseRing}.";
             }else {
                 ret = "$ret The BLACK RING has already been destroyed in the Forge, ";
             }
 
             if(wqowner != null) {
-                ret = "$ret and the ${session.prospitRing.owner.htmlTitle()} has their grubby mits on the ${session.prospitRing}.";
+                ret = "$ret and the ${session.prospitRing.owner.htmlTitleWithTip()} has their grubby mits on the ${session.prospitRing}.";
             }else {
                 ret = "$ret and the WHITE RING has already been destroyed in the Forge. ";
             }
@@ -344,6 +345,7 @@ class Aftermath extends Scene {
 
         appendHtml(div, end);
         //String divID = (div.id) + "_aftermath" ;
+        processBigBadEndings();
 
 
         //poseAsATeam(canvasDiv, this.session.players, 2000); //everybody, even corpses, pose as a team.
@@ -357,6 +359,36 @@ class Aftermath extends Scene {
             session.simulationComplete("Aftermath, not eligible for a combo.");
         }
         return null;
+    }
+
+    void processBigBadEndings() {
+        List<GameEntity> possibleTargets = new List<GameEntity>.from(session.activatedNPCS);
+        //if you are not a big bad, dead or inactive, remove.
+        possibleTargets.removeWhere((GameEntity item) => !(item is BigBad) || item.dead || !item.active);
+        bool frogIsIn = session.stats.won;
+        String status = session.frogStatus();
+        if(status == "Full Frog" || status == "Purple Frog") {
+            for (BigBad bb in possibleTargets) {
+                String text = "";
+                if (!frogIsIn) {
+                    frogIsIn = true;
+                    text = "${bb
+                        .htmlTitle()} pops the fully bred, but Playerless Frog into the Skaia hole.";
+                }
+                if (session.stats.gnosisEnding) {
+                    text = "$text ${bb.pinkFrogText}";
+                } else if (session.frogStatus().contains("Purple")) {
+                    text = "$text ${bb.purpleFrogText}";
+                } else {
+                    text = "$text ${bb.regularFrogText}";
+                }
+                if (text != null && text.isNotEmpty) {
+                    DivElement div = new DivElement()
+                        ..text = text;
+                    SimController.instance.storyElement.append(div);
+                }
+            }
+        }
     }
 
     void processLivingEnding(Element div, String end, bool yellowYard) {

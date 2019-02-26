@@ -49,7 +49,8 @@ class  SerializableScene extends Scene {
     List<EffectEntity> effectsForLiving = new List<EffectEntity>();
     List<EffectLand> effectsForLands = new List<EffectLand>();
 
-  String name = "Generic Scene";
+    @override
+    String name = "Generic Scene";
 
   SerializableScene(Session session) : super(session);
 
@@ -64,19 +65,79 @@ class  SerializableScene extends Scene {
       return ">Shenanigans: ";
   }
 
+  //note from jr 10/04/18, i'm doing this so the troll empress can do a thing to a land if she has an item
+    //i think in MOST cases if you are targeting a land and have a single 'self' target, you wanna ignore it.
+    //but if i'm wrong i can turn this off and all that will happen is the trollempress will go back to
+    //roughing herself up, to get ready for her plan, which isn't like, terrible or anything.
+  void ignoreSelfIfPrimarilyLandFocused() {
+      if(targetOne) {
+          if(livingTargets.length == 1 && livingTargets.first == gameEntity && landTargets.isNotEmpty) {
+              livingTargets.clear();
+          }
+      }
+  }
+
   @override
   void renderContent(Element div) {
       //session.logger.info("TEST BIG BAD: rendering content");
+      ignoreSelfIfPrimarilyLandFocused();
 
       String displayText = "<br>${getHeader()} $flavorText";
       displayText =   displayText.replaceAll("$TARGET", "${getTargetNames()}");
       displayText =   displayText.replaceAll("$SCENE_OWNER", "${gameEntity.htmlTitleWithTip()}");
 
+
+
+
       myElement = new DivElement();
       div.append(myElement);
-      myElement.setInnerHtml("$displayText");
+      myElement.setInnerHtml("$displayText",treeSanitizer: NodeTreeSanitizer.trusted,validator: new NodeValidatorBuilder()..allowElement("img"));
+
+      ImageElement portrait;
+
+      if(gameEntity is Carapace) {
+          if(!doNotRender) {
+              String extension = ".png";
+              if(gameEntity.name.contains("Lord English") || gameEntity.name.contains("Hussie")) extension = ".gif";
+              portrait = new ImageElement(
+                  src: "images/BigBadCards/${(gameEntity as Carapace).initials
+                      .toLowerCase()}$extension");
+              portrait.onError.listen((e) {
+                  portrait.src = "images/BigBadCards/default.gif";
+              });
+              portrait.style.width = "100px";
+              portrait.style.backgroundColor = "grey";
+              div.append(portrait);
+          }
+      }else if(gameEntity is BigBad) {
+          if(!doNotRender) {
+              String extension = ".png";
+              if(gameEntity.name.contains("Lord English") || gameEntity.name.contains("Hussie")) extension = ".gif";
+              portrait = new ImageElement(src: "images/BigBadCards/${gameEntity.name.toLowerCase().replaceAll(" ", "_")}$extension");
+
+              portrait.onError.listen((e) {
+                  portrait.src = "images/BigBadCards/default.gif";
+              });
+              portrait.style.width = "300px";
+              portrait.style.backgroundColor = "grey";
+              div.append(portrait);
+          }
+      }
+
       doEffects(); //automatic
       doAction(); //specific to subclass
+      if(gameEntity.name == "Lawgun") {
+          if(!doNotRender) {
+              String extension = ".png";
+              if(gameEntity.name.contains("Lord English") || gameEntity.name.contains("Hussie")) extension = ".gif";
+              portrait.src = "images/BigBadCards/${gameEntity.name.toLowerCase().replaceAll(" ", "_")}$extension";
+
+              portrait.onError.listen((e) {
+                  portrait.src = "images/BigBadCards/default.gif";
+              });
+
+          }
+      }
       //ANY SUB CLASSES ARE RESPONSIBLE FOR RENDERING CANVAS SHIT HERE, SO THEY CALL SUPER, THEN DO CANVAS
   }
 
@@ -107,7 +168,7 @@ class  SerializableScene extends Scene {
     }
 
   void doEffects() {
-      print("doing effect for $gameEntity, effects for living is $effectsForLiving, $effectsForLands");
+      //print("tick is ${session.numTicks} , doing effect for $gameEntity, scene is $name, chosen targets is $finalLivingTargets from all living of $livingTargets ");
       for(ActionEffect e in effectsForLands) {
           e.applyEffect();
       }
@@ -254,6 +315,10 @@ void syncForm() {
 
     }
 
+    @override
+    String toString() {
+            return name;
+    }
 
     JSONObject toJSON() {
         JSONObject json = new JSONObject();
@@ -303,11 +368,21 @@ void syncForm() {
       landTargets.clear();
       livingTargets.clear();
       livingTargets = new Set<GameEntity>.from(session.activatedNPCS); //not all, just active
-      //TODO should i also get party members for those npcs? otherwise can't get brain ghosts and robots and the like
+      //royalty exist
+      if(session.derse != null) {
+        if(session.derse.queen != null && !livingTargets.contains(session.derse.queen)) livingTargets.add(session.derse.queen);
+        if(session.derse.king != null && !livingTargets.contains(session.derse.king)) livingTargets.add(session.derse.king);
+      }
+
+      if(session.prospit != null) {
+         if(session.prospit.queen != null && !livingTargets.contains(session.prospit.queen)) livingTargets.add(session.prospit.queen);
+          if(session.prospit.king != null && !livingTargets.contains(session.prospit.king)) livingTargets.add(session.prospit.king);
+      }
+
       for(Player p in session.players) {
             if(p.active) {
                 livingTargets.add(p);
-                landTargets.add(p.land);
+                if(p.land != null) landTargets.add(p.land);
             }
       }
 
@@ -321,14 +396,21 @@ void syncForm() {
 
       for(TargetConditionLiving tc in triggerConditionsLiving) {
           livingTargets = new Set<GameEntity>.from(tc.filter(new List<GameEntity>.from(livingTargets)));
+          if(gameEntity.name.contains("Empress")) {
+           // print("big bad is $gameEntity and scene is $name and living targets is $livingTargets");
+          }
       }
       if(triggerConditionsLiving.isEmpty) livingTargets.clear();
 
 
       for(TargetConditionLand tc in triggerConditionsLand) {
-          landTargets = new Set<Land>.from(tc.filter(new List<Land>.from(landTargets)));
+          landTargets = new Set<Land>.from(tc.filter(new List<Land>.from(landTargets), finalLivingTargets));
       }
       if(triggerConditionsLand.isEmpty) landTargets.clear();
+
+      //if you have conditions you MUSt meet them. period.
+      if(triggerConditionsLiving.isNotEmpty && livingTargets.isEmpty) return false;
+      if(triggerConditionsLand.isNotEmpty && landTargets.isEmpty) return false;
 
 
       return landTargets.isNotEmpty || livingTargets.isNotEmpty;
@@ -374,8 +456,10 @@ class SceneForm {
     }
 
     void syncDataBoxToScene() {
+        print("trying to sync data box, owner is ${scene.gameEntity}");
         dataBox.value = scene.toDataString();
         if(scene.gameEntity is BigBad) {
+            print("i'm owned by a big bad so syncing it too");
             (scene.gameEntity as BigBad).syncForm();
         }
     }

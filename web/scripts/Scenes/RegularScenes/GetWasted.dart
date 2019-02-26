@@ -24,6 +24,8 @@ import "../../navbar.dart";
 typedef DrawingMethod(CanvasElement canvasID, List<Player> players);
 
 class GetWasted extends Scene {
+    @override
+    String name = "GetWasted";
     List<DrawMethodWithParameter> drawingMethods = new List<DrawMethodWithParameter>();
     Player player; //only one player can get wasted at a time.
     int tippingPointBase = 20; //omg if i can balance things where 13 is the best tipping point i will be so fucking amused. (hey, did you know 13 is the SBURBSim arc number???)
@@ -235,7 +237,7 @@ class GetWasted extends Scene {
     }
 
     String processTier3(Element div) {
-        if(player.aspect == Aspects.TIME || player.aspect == Aspects.BREATH) return exploitMobility(div);
+        if(player.aspect == Aspects.TIME || player.aspect == Aspects.BREATH || player.aspect == Aspects.LAW) return exploitMobility(div);
         if(player.aspect == Aspects.HOPE || player.aspect == Aspects.LIGHT) return exploitFate(div);
         if(player.aspect == Aspects.RAGE || player.aspect == Aspects.MIND) return exploitTime(div);
         if(player.aspect == Aspects.SPACE || player.aspect == Aspects.VOID) return exploitGlitches(div);
@@ -250,7 +252,8 @@ class GetWasted extends Scene {
         String ret = "The ${player.htmlTitle()} exploits the rules of SBURB. ";
         Sylladex allItemsInParty = new Sylladex(player, new List<Item>()); //sylladex so it stores copies
         for(Player p in session.players) {
-            allItemsInParty.addAll(p.sylladex.inventory);
+            //if i don't make a new list, then you can do concurrent mods here and it crashes
+            allItemsInParty.addAll(new List.from(p.sylladex.inventory));
             allItemsInParty.add(p.specibus);
         }
         allItemsInParty.sort();
@@ -285,6 +288,8 @@ class GetWasted extends Scene {
             ret = " They set up a frankly scandalous series of time shenanigans";
             ret += " , allowing all players to basically spam multiple quests 'at the same time'. ";
 
+        }else if(player.aspect == Aspects.LAW) {
+            ret = " They enforce the rules, requiring all players to do their main quests and not lollygag.";
         }else {
             ret = "";
         }
@@ -533,16 +538,19 @@ class GetWasted extends Scene {
         //small boost to space player land leve, for example. maybe some grist for everyone (once that's a thing)
         Player space = findAspectPlayer(this.session.players, Aspects.SPACE);
         if(space == null) return;
-        space.increaseLandLevel(5.0);
-        String ret = "<Br><br>Holy shit, the ${player.htmlTitle()} just figured out how important Frogs are to beating this game. ";
-        if(space == player) {
+        if(space.landLevel < session.goodFrogLevel){
+            space.increaseLandLevel(5.0);
+            String ret = "<Br><br>Holy shit, the ${player.htmlTitle()} just figured out how important Frogs are to beating this game. ";
+            if(space == player) {
             ret += " They waste no time and just fucking DO it. ";
             if(player.class_name == SBURBClassManager.WASTE) ret += " They DO waste some space though. It's only natural. ";
-        }else {
+            }else {
             ret += " They bug and fuss and meddle until the ${space.htmlTitle()} just fucking DOES it. ";
+            ret += "<br><br>";
+            appendHtml(div, ret );
+            }
         }
-        ret += "<br><br>";
-        appendHtml(div, ret );
+
 
     }
 

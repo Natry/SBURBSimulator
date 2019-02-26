@@ -13,12 +13,6 @@ class GiveAction extends EffectEntity {
     GiveAction(SerializableScene scene) : super(scene);
 
 
-  @override
-  void copyFromJSON(JSONObject json) {
-     // print("copying from json");
-      importantWord = json[ActionEffect.IMPORTANTWORD];
-      importantInt = (int.parse(json[ActionEffect.IMPORTANTINT]));
-  }
 
   @override
   void syncFormToMe() {
@@ -30,11 +24,16 @@ class GiveAction extends EffectEntity {
         setupContainer(divbluh);
         DivElement me = new DivElement();
         container.append(me);
+
         List<String> allStatsKnown = new List<String>.from(Stats.byName.keys);
 
         me.setInnerHtml("<b>GiveAction (whether mind control or giving a quest):</b> <br>");
         //stat time
-
+        AnchorElement a = new AnchorElement(href:"AiEngineSceneCreation.html")..text = "Scene Builder";
+        a.style.backgroundColor = "white";
+        a.style.padding = "5px";
+        a.target = "_blank";
+        me.append(a);
         actionStringBox = new TextAreaElement();
         me.append(actionStringBox);
         actionStringBox.value = importantWord;
