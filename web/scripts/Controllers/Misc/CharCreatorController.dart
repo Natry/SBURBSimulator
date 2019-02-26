@@ -2,11 +2,13 @@ import 'dart:html';
 import '../../SBURBSim.dart';
 import '../../navbar.dart';
 import '../../v2.0/char_creator_helper.dart';
+import "dart:async";
 
 CharCreatorController self;
 //only one session on this page
 Session session;
-void main() async
+
+Future<Null> main() async
 
 {
   loadNavbar();
@@ -30,7 +32,9 @@ void main() async
 
   querySelector("#button").onClick.listen((Event e) => renderURLToSendPlayersIntoSBURB());
   session = new Session(SimController.instance.initial_seed);
-  session.startSession();
+  checkEasterEgg(session);
+  self.easterEggCallBack(session);
+  //session.startSession();
   loadFuckingEverything(session,"I really should stop doing this",renderPlayersForEditing );
 }
 
@@ -65,7 +69,7 @@ class CharCreatorController extends SimController {
   //don't actually start the session, but get players ready.
   @override
   void easterEggCallBack(Session session) {
-    initializePlayers(session.players, session);
+    //initializePlayers(session.players, session);
     charCreatorHelperGlobalVar = new CharacterCreatorHelper(session.players);
 
   }
@@ -93,6 +97,10 @@ class CharCreatorController extends SimController {
     //
     String html = "<Br><br><a href = 'index2.html?seed=$initial_seed&${generateURLParamsForPlayers(session.players,true)}' target='_blank'>Be Responsible For Sending Players into SBURB? (Link $numURLS)</a>  | <a href = 'rare_session_finder.html?seed=$initial_seed&${generateURLParamsForPlayers(session.players,true)}' target='_blank'>Have AB find different ways a session with these players could go?</a>";
     if(session.players.length == 1)  html = "<Br><br><a href = 'dead_index.html?seed=$initial_seed&${generateURLParamsForPlayers(session.players,true)}' target='_blank'>Be Responsible For Sending Player into a Dead Session? (Link $numURLS)</a> | <a href = 'dead_session_finder.html?seed=$initial_seed&${generateURLParamsForPlayers(session.players,true)}' target='_blank'>Have AB try to find a dead session where this player wins?</a>";
+
+    DivElement deprecated = new DivElement();
+    querySelector("#character_creator").append(deprecated);
+
 
     appendHtml(querySelector("#character_creator"),html);
   }

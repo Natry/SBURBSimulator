@@ -542,7 +542,7 @@ abstract class Drawing {
 
 
     //might be repeats of players in there, cause of time clones
-    static void poseAsATeam(CanvasElement canvas, List<Player> players) {
+    static void poseAsATeam(CanvasElement canvas, List<GameEntity> players) {
         if (checkSimMode() == true) {
             return;
         }
@@ -981,7 +981,14 @@ abstract class Drawing {
         String imageString = "${player.moon}.png";
         addImageTag(imageString);
         ImageElement img = imageSelector(imageString);
-        ctx.drawImage(img, 0, 0);
+        try {
+            ctx.drawImage(img, 0, 0);
+        }catch(e) {
+            String imageString = "unknownmoon.png";
+            addImageTag(imageString);
+            ImageElement img = imageSelector(imageString);
+            ctx.drawImage(img, 0, 0);
+        }
     }
 
 
@@ -1496,10 +1503,11 @@ abstract class Drawing {
     }
 
     static void drawSpriteFromScratch(CanvasElement canvas, Player player, [CanvasRenderingContext2D ctx = null, bool baby = false]) {
-       // ;
+
         if (checkSimMode() == true) {
             return;
         }
+        canvas.context2D.save();
         player = Player.makeRenderingSnapshot(player,true);
         //could be turnways or baby
         if (ctx == null) {
@@ -1630,6 +1638,9 @@ abstract class Drawing {
         }else if(player.session.mutator.lightField && !player.session.mutator.hasSpotLight(player)) {
             voidSwap(canvas, 0.2); //compared to the light player, you are irrelevant.
         }
+
+        canvas.context2D.restore();
+
     }
 
 

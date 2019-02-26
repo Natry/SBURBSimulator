@@ -30,7 +30,7 @@ class Moon extends Land {
     Palette palette;
 
   Moon.fromWeightedThemes(Ring this._queensRing, Scepter this._kingsScepter, String name, Map<Theme, double> themes, Session session, Aspect a, this.id, this.palette) {
-      session.logger.info("DEBUG DESTROY MOON: making moon $name");
+      //session.logger.info("DEBUG DESTROY MOON: making moon $name");
       //override land of x and y. you are named Prospit/derse/etc
       this.name = name;
       this.session = session;
@@ -100,10 +100,13 @@ class Moon extends Land {
 
       Element ret = new DivElement();
       String killedString  = "";
+      String bb = "";
+      if(killer != null) bb = killer.makeBigBad();
+
       String are = "are";
       if(killed.length == 1) are = "is";
       if(killed.isNotEmpty) killedString = "The ${turnArrayIntoHumanSentence(killed)} $are now dead.";
-      ret.setInnerHtml("${name} is now destroyed. $killedString");
+      ret.setInnerHtml("${name} is now destroyed. $killedString $bb");
       //render explosion graphic and text. text should describe if anyone died.
       //Rewards/planetsplode.png
 

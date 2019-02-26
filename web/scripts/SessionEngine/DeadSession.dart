@@ -21,7 +21,7 @@ class DeadSession extends Session {
     Map<Theme, double> themes = new Map<Theme, double>();
     Map<Theme, double> chosenThemesForDeadSession =  new Map<Theme, double>();
     int numberLandsRemaining = 16; //can remove some in "the break".
-    List<QuestChainFeature> boringBullshit;
+    List<QuestChainFeature> boringBullshit = new List<QuestChainFeature>();
     QuestChainFeature victoryLap;
     Player metaPlayer;
     @override
@@ -48,6 +48,7 @@ class DeadSession extends Session {
     //lands can only happen once the player's main land has gotten past the first stage.
     Land currentLand;
     DeadSession(int sessionID): super(sessionID) {
+        SimController.instance.maxTicks = 300;
         mutator.sessionHealth = 13000 * Stats.POWER.coefficient;
         sessionHealth = mutator.sessionHealth;
         //have a metaplayer BEFORE you make the bullshit quests.
@@ -59,6 +60,7 @@ class DeadSession extends Session {
             oddsOfSuccess += rand.nextDouble(0.4); //fu almost can't lose. but if he does ;) ;) ;)
         }
         makeThemes();
+        getPlayersReady();
         timeTillReckoning = minTimeTillReckoning; //pretty long compared to a normal session, but not 16 times longer. what will you do?
     }
 
@@ -155,32 +157,27 @@ class DeadSession extends Session {
         }*/
         }
         if(id ==612) this.session_id = 413;
-
+        checkEasterEgg(tmpcurSessionGlobalVar);
         await tmpcurSessionGlobalVar.startSession();
     }
 
 
     @override
-    Future<Session> startSession() async {
+    Future<Session> startSession([bool dontReinit]) async {
         globalInit(); // initialise classes and aspects if necessary
         SimController.instance.currentSessionForErrors = this;
-
+        players = <Player>[players.first]; //hardcoded to be one big
         // //
         changeCanonState(this, getParameterByName("canonState",null));
-        //  //
-        this.reinit("dead start");
-        ////
-        this.makePlayers();
-        ////
-        this.randomizeEntryOrder();
-        //authorMessage();
-        this.makeGuardians(); //after entry order established
-
-        checkEasterEgg(this);
-        easterEggCallBack();
         //red miles are way too common and also dead sessions are special
         prospit.destroyRing();
         derse.destroyRing();
+        if (doNotRender == true) {
+            intro();
+        } else {
+            //
+            load(this,players, getGuardiansForPlayers(players), "");
+        }
         return completer.future;
 
     }
@@ -188,7 +185,7 @@ class DeadSession extends Session {
     @override
     void easterEggCallBack() {
         DeadSession ds = (this as DeadSession);
-        initializePlayers(this.players, this); //will take care of overriding players if need be.
+        //initializePlayers(this.players, this); //will take care of overriding players if need be.
         //has to happen here cuz initializePlayers can wipe out relationships.
         ds.players[0].deriveLand = false;
         //ds.players[0].relationships.add(new Relationship(ds.players[0], -999, ds.metaPlayer)); //if you need to talk to anyone, talk to metaplayer.
@@ -385,11 +382,11 @@ class DeadSession extends Session {
 
     @override
     void makePlayers() {
-        this.players = new List<Player>(1); //it's a list so everything still works, but limited to one player.
+        this.players = new List<Player>(); //it's a list so everything still works, but limited to one player.
         resetAvailableClasspects();
         int numPlayers = this.rand.nextIntRange(2, 12); //rand.nextIntRange(2,12);
         double special = rand.nextDouble();
-        players[0] = (randomPlayer(this));
+        players.add(randomPlayer(this));
 
         //random chance of Lord/Muse for natural two player sessions, even if they become dead
         if(numPlayers <= 2) {

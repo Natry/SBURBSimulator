@@ -17,7 +17,7 @@ import "dart:async";
 //care about other controllers later.
 abstract class SimController {
     Session currentSessionForErrors;
-    int maxTicks = 300;
+    int maxTicks = 100;
     static bool shogun = false;  //sim goes into shogun mode
     static int spriteTemplateWidth = 400;
     static int spriteTemplateHeight = 300;
@@ -65,7 +65,7 @@ abstract class SimController {
 
 
     void scratchEasterEggCallBack(Session s) {
-        initializePlayers(s.players, s); //will take care of overriding players if need be.
+        //initializePlayers(s.players, s); //will take care of overriding players if need be.
 
 
         if (s.stats.ectoBiologyStarted) { //players are reset except for haivng an ectobiological source
@@ -132,31 +132,6 @@ abstract class SimController {
         if(s.mutator.spaceField) s.mutator.scratchedCombo(s, raggedPlayers);
         s.intro();
     }
-
-
-    //they aren't full callbacks anymore but live here so regular vs ab etc have diff behaviors
-    void easterEggCallBack(Session s) {
-        initializePlayers(s.players, s); //will take care of overriding players if need be.
-        s.checkSGRUB();
-        if (doNotRender == true) {
-            s.intro();
-        } else {
-            //
-            load(s,s.players, getGuardiansForPlayers(s.players), "");
-        }
-    }
-
-    void easterEggCallBackRestart(Session s) {
-        initializePlayers(s.players, s); //initializePlayers
-        s.intro(); //<-- instead of load, bc don't need to load.
-
-    }
-
-    void easterEggCallBackRestartScratch(Session s) {
-        scratchEasterEggCallBack(s);
-    }
-
-
 
 
     void recoverFromCorruption(Session s) {

@@ -19,10 +19,39 @@ class KillWhiteKing extends Scene {
         Element container = new DivElement();
         me.append(container);
         GameEntity whiteKing = session.battlefield == null  ?  null:session.battlefield.whiteKing;
-        startFight(div, wkowner, session.prospitScepter, whiteKing);
+        if(session.mutator.lifeField || (whiteKing.unconditionallyImmortal &&  gameEntity.unconditionallyImmortal)) {
+            return wellFuck(div, wkowner, session.prospitScepter, whiteKing);
+        }else if (whiteKing.dead) {
+            return ohOkay(div, wkowner, session.prospitScepter, whiteKing);
+        }else {
+            return startFight(div, wkowner, session.prospitScepter, whiteKing);
+        }
     }
 
+    void ohOkay(Element container, GameEntity target, Scepter scepter, GameEntity whoSHOULDHaveIt) {
+        DivElement div = new DivElement();
+        container.append(div);
+        String text = "";
+        gameEntity.lootCorpse(target);
+        text = "Oh. Huh. The ${target.htmlTitle()} is already dead? The ${gameEntity.htmlTitleWithTip()} just loots the $scepter from their corpse. Easy enough.";
+        div.setInnerHtml(text);
+    }
 
+    void wellFuck(Element container, GameEntity target, Scepter scepter, GameEntity whoSHOULDHaveIt) {
+        DivElement div = new DivElement();
+        container.append(div);
+        String text = "";
+        text = "<br><br>Well. Fuck. After countless hours spent fruitlessly strifing, the ${gameEntity.htmlTitle()} stares blankly at the ${target.htmlTitle()}. How do you meet the Scepter's calling when both parties are immortal? They finally resolve it via a high stakes game of coin flipping. ${target.htmlTitle()} calls heads. ";
+        if(rand.nextBool()) {
+            target.sylladex.add(scepter);
+            text = "$text The coin lands on heads! The ${target.htmlTitleWithTip()} wins! We all agree this is phenomenally stupid. ";
+
+        }else {
+            gameEntity.sylladex.add(scepter);
+            text = "$text The coin lands on tails! The ${gameEntity.htmlTitleWithTip()} wins! We all agree this is phenomenally stupid. ";
+        }
+        div.setInnerHtml(text);
+    }
 
 
     void startFight(Element container, GameEntity target, Scepter scepter, GameEntity whoSHOULDHaveIt) {
@@ -43,18 +72,19 @@ class KillWhiteKing extends Scene {
             g.available = false;
         }
 
-        Team pTeam = new Team.withName("The Owner of the ${session.derseScepter} ",this.session, fighting);
+        Team pTeam = new Team.withName("The Owner of the ${session.derseScepter} (${gameEntity.htmlTitleHPNoTip()}) ",this.session, fighting);
         pTeam.canAbscond = false;
-        Team dTeam = new Team(this.session, [target]);
+        Team dTeam = new Team.withName("The Owner of the ${session.prospitScepter} (${target.htmlTitleHPNoTip()})",this.session, [target]);
         dTeam.canAbscond = false;
         Strife strife = new Strife(this.session, [pTeam, dTeam]);
+        print("before i start the strife, i think the target is dead: ${target.dead} ");
         strife.startTurn(div);
 
         DivElement div2 = new DivElement();
         container.append(div2);
         String what = "";
         if(scepter.owner != gameEntity) what = "Uh. I....really don't think that was supposed to happen. Fuck. Now what happens?";
-        div2.setInnerHtml("<br>The ${scepter.owner.htmlTitle()} is now the owner of the ${scepter}. $what <br>");
+        div2.setInnerHtml("<br>The ${scepter.owner.htmlTitleWithTip()} is now the owner of the ${scepter}. $what <br>");
 
     }
 

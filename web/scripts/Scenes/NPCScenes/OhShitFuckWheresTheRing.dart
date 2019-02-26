@@ -19,16 +19,57 @@ class OhShitFuckWheresTheRing extends Scene {
           Element container = new DivElement();
           me.append(container);
           GameEntity blackQueen = session.derse == null  ?  null:session.derse.queen;
-          startFight(div, bqowner, session.derseRing, blackQueen);
+          if(session.mutator.lifeField || (blackQueen.unconditionallyImmortal &&  gameEntity.unconditionallyImmortal)) {
+              return wellFuck(div, bqowner, session.derseRing, blackQueen);
+          }else if (blackQueen.dead) {
+              return ohOkay(div, bqowner, session.prospitScepter, blackQueen);
+          }else {
+              return startFight(div, bqowner, session.derseRing, blackQueen);
+          }
       }
+
+
 
       if(wqowner != null && !wqowner.alliedToPlayers) {
           Element container = new DivElement();
           me.append(container);
           GameEntity whiteQueen = session.prospit == null  ?  null:session.prospit.queen;
-          startFight(div, wqowner, session.prospitRing, whiteQueen);
+
+          if(session.mutator.lifeField || (whiteQueen.unconditionallyImmortal &&  gameEntity.unconditionallyImmortal)) {
+              wellFuck(div, wqowner, session.prospitRing, whiteQueen);
+          }else if (whiteQueen.dead) {
+              return ohOkay(div, wqowner, session.prospitScepter, whiteQueen);
+          }else {
+              startFight(div, wqowner, session.prospitRing, whiteQueen);
+          }
       }
   }
+
+    void ohOkay(Element container, GameEntity target, Scepter scepter, GameEntity whoSHOULDHaveIt) {
+        DivElement div = new DivElement();
+        container.append(div);
+        String text = "";
+        gameEntity.lootCorpse(target);
+        text = "Oh. Huh. The ${target.htmlTitle()} is already dead? The ${gameEntity.htmlTitleWithTip()} just loots the $scepter from their corpse. Easy enough.";
+        div.setInnerHtml(text);
+    }
+
+    void wellFuck(Element container, GameEntity target, Ring ring, GameEntity whoSHOULDHaveIt) {
+        DivElement div = new DivElement();
+        container.append(div);
+        String text = "";
+        text = "<br><br>Well. Fuck. After countless hours spent fruitlessly strifing, the ${gameEntity.htmlTitle()} stares blankly at the ${target.htmlTitle()}. The Players need the Ring, but immortality stops things from progressing as Skaia intended. They finally resolve it via a high stakes game of coin flipping. ${target.htmlTitle()} calls heads. ";
+        if(rand.nextBool()) {
+            target.sylladex.add(ring);
+            text = "$text The coin lands on heads! The ${target.htmlTitleWithTip()} wins! We all agree this is phenomenally stupid. ";
+        }else {
+            gameEntity.sylladex.add(ring);
+            text = "$text The coin lands on tails! The ${gameEntity.htmlTitleWithTip()} wins! We all agree this is phenomenally stupid. ";
+        }
+        div.setInnerHtml(text);
+
+
+    }
 
     List<GameEntity> getGoodGuys(){
         List<GameEntity>  living = findLiving(this.session.players);
@@ -77,14 +118,15 @@ class OhShitFuckWheresTheRing extends Scene {
 
       Team pTeam = new Team.withName("The Players",this.session, fighting);
       pTeam.canAbscond = false;
-      Team dTeam = new Team(this.session, [target]);
+      Team dTeam = new Team.withName("The Owner of the $ring (${target.htmlTitleHPNoTip()})",this.session, [target]);
       dTeam.canAbscond = false;
       Strife strife = new Strife(this.session, [pTeam, dTeam]);
+      print("before i start the strife, i think the target is alive: ${target.dead} ");
       strife.startTurn(div);
 
       DivElement div2 = new DivElement();
       container.append(div2);
-      div2.setInnerHtml("The ${ring.owner.htmlTitle()} is now the owner of the ${ring}. ");
+      div2.setInnerHtml("The ${ring.owner.htmlTitleWithTip()} is now the owner of the ${ring}. ");
 
   }
 

@@ -17,8 +17,6 @@ class Carapace extends NPC {
     double activationChance = 0.0;
     double companionChance = 0.01;
 
-    //TODO make it so when a carapace is crowned they get this scene as their highest priority
-    Scene crownedScene;
     //what is their normal goal
     List<String> goalFlavors = new List<String>();
     //what do they do with the ring?
@@ -182,6 +180,9 @@ class Carapace extends NPC {
             name = "${session.rand.pickFrom(firstNames)} ${session.rand.pickFrom(lastNames)}";
         }
     }
+
+
+
 
     @override
     StatHolder createHolder() => new CarapaceStatHolder(this);

@@ -113,9 +113,10 @@ class Land extends Object with FeatureHolder {
     }
 
     bool doQuest(Element div, Player p1, GameEntity p2) {
-        //;
+
         bool ret = currentQuestChain.doQuest(p1, p2, denizenFeature, consortFeature, symbolicMcguffin, physicalMcguffin, div, this);
         if(currentQuestChain.finished) {
+            p1.leveledTheHellUp = true;
            // session.logger.info("deciding what to do next.");
             decideHowToProcede(); //if i just finished the last quest, then i am done.
         }
@@ -267,12 +268,13 @@ class Land extends Object with FeatureHolder {
         session.stats.planetDestroyed = true;
         killer.landKillCount ++;
         dead = true;
+        name = "Destroyed $name";
 
         if(session is DeadSession) {
             (session as DeadSession).failed = true;
         }
         List<String> killed = new List<String>();
-
+        List<GameEntity> renderableTargets = new List<GameEntity>();
         //KILL the associated player (unless they have reached skaia)
         for(GameEntity g in associatedEntities) {
             if(g is Player && !g.dead) {
@@ -284,14 +286,17 @@ class Land extends Object with FeatureHolder {
                 }
                 if(!p.canHelp()) { //you can't leave your planet yet, you're dead, and no one can get to your body to smooch it, so dream self dead, too
                     killed.add(p.htmlTitle());
+                    renderableTargets.add(p);
                     killPlayer(p, killer);
                 }else if(!thirdCompleted && session.rand.nextBool()) {
                     //you happened to be on your planet even though you could have been off
                     killed.add(p.htmlTitle());
                     killPlayer(p, killer);
+                    renderableTargets.add(p);
                 }
                 //if third IS completed, assume they are on skaia and so safe
             }
+            killer.makeBigBad();
         }
 
         Element ret = new DivElement();
@@ -299,16 +304,20 @@ class Land extends Object with FeatureHolder {
         String are = "are";
         if(killed.length == 1) are = "is";
         if(killed.isNotEmpty) killedString = "The ${turnArrayIntoHumanSentence(killed)} $are now dead.";
-        ret.setInnerHtml( "The ${name} is now destroyed. $killedString");
+        String bb = "";
+        if(killer != null) bb = killer.makeBigBad();
+
+        ret.setInnerHtml( "The ${name} is now destroyed. $killedString $bb");
         //render explosion graphic and text. text should describe if anyone died.
         //Rewards/planetsplode.png
         if(!doNotRender) {
             ImageElement image = new ImageElement(src: "images/Rewards/planetsplode.png");
-
-            //can do this because it's not canvas
-            image.onLoad.listen((e) {
-                ret.append(image);
-            });
+            ret.append(image);
+            if(renderableTargets.isNotEmpty) {
+                CanvasElement canvasDiv = new CanvasElement(width: canvasWidth, height: canvasHeight);
+                ret.append(canvasDiv);
+                Drawing.poseAsATeam(canvasDiv, renderableTargets);
+            }
         }
 
         return ret;

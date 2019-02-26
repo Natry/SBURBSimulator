@@ -72,11 +72,11 @@ class GiveJackScepter extends Scene {
 
     //only if sburb lore is low or unallied with players
     String giveScepter() {
-        session.logger.info("AB: someone is trying to give jack the scepter");
-        jack.sylladex.add(gameEntity.ring);
-        return "The ${gameEntity.htmlTitle()} hands the ${gameEntity.scepter} over to the ${jack.htmlTitle()}. This is clearly a good decision.";
-
-
+        session.logger.info("AB: $gameEntity is trying to give jack the scepter");
+        Scepter r = gameEntity.scepter;
+        String jackName = jack.name;
+        jack.sylladex.add(gameEntity.scepter);
+        return "The ${gameEntity.htmlTitle()} hands the ${r} over to the ${jackName}. This is clearly a good decision and nothing bad can come from ${jackName} becoming the ${jack.name}.";
     }
 
     @override

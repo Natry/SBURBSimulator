@@ -1,3 +1,4 @@
+import '../SessionEngine/JSONObject.dart';
 import "Item.dart";
 import "Trait.dart";
 import "../random.dart";
@@ -18,6 +19,33 @@ class Specibus extends Item {
         return new Specibus(baseName, requiredTrait, nonrequiredTraits.toList());
     }
 
+    @override
+    JSONObject toJSON() {
+        JSONObject json = new JSONObject();
+        json["name"] = baseName;
+
+
+        //just a list of strings
+        List<String> traitArray = new List<String>();
+
+        for(ItemTrait s in nonrequiredTraits) {
+            traitArray.add(s.toString());
+        }
+        json["traits"] = traitArray.toString();
+        json["requiredTrait"] = requiredTrait.toString();
+        return json;
+
+    }
+
+    @override
+    void copyFromJSON(JSONObject json) {
+        baseName = json["name"];
+        requiredTrait = ItemTraitFactory.itemTraitNamed(json[requiredTrait]);
+
+        String traitsString = json["traits"];
+        loadTraits(traitsString);
+    }
+
     //don't be repetitive for specibus, where they are very limited in what they can say
     @override
     ItemTrait getTraitBesides(ItemTrait it) {
@@ -33,6 +61,10 @@ class Specibus extends Item {
 
     Specibus(String baseName, ItemTrait this.requiredTrait, List<ItemTrait> traits, {abjDesc: null, shogunDesc: null}) : super(baseName, traits, abDesc:abjDesc,shogunDesc:shogunDesc) {
         this.traits.add(requiredTrait);
+    }
+
+    static Specibus fromItem(Item item){
+        return new Specibus(item.baseName, item.traits.first, new List.from(item.traits));
     }
 
 

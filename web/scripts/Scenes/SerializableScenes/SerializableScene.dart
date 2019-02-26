@@ -15,81 +15,148 @@ import "dart:convert";
  * if a sub class overrides the trigger, it should be to make sure the ACTION on a TARGET
  * is actually possible (i.e. there are any carapaces living remainging)
  */
-abstract class  SerializableScene extends Scene {
+class  SerializableScene extends Scene {
 
-    //things that can be replaced
-    static String BIGBADNAME = BigBad.BIGBADNAME;
-    static String TARGET = "TARGET";
+
+    Element myElement;
+
+    static String TARGET = "TARGET_NAME_OR_NAMES";
+    static String SCENE_OWNER = "SCENE_OWNER_NAME";
+
 
     SceneForm form;
+    //if this is set i only poke at the first valid target, not all valid targets
+    bool targetOne = false;
 
     String get labelPattern => ":___ ";
 
 
+    bool posedAsATeamAlready = false;
+
     //not all things have a target, subclasses without one won't bother
 
-    //what do you try to target, used for drop down
-    static String TARGETPLAYERS = "Players";
-    static String TARGETCARAPACES = "Carapaces";
-    static String TARGETDENIZENS = "Denizens";
-    static String TARGETLANDS = "Lands";
-    static String TARGETMOONS = "Moons";
-    static String TARGETCONSORTS = "Consorts";
-    static String TARGETGHOSTS = "Ghosts";
-    static String TARGETDEADPLAYERS = "Dead Players";
-    static String TARGETDEADCARAPACES = "Dead Carapaces";
-    static String TARGETROBOTS = "Robots";
-    static String TARGETDREAMSELVES = "Dream Selves";
-    static String TARGETBIGBADS = "Big Bads";
-    static String TARGETGODS = "Gods";
-    static String TARGETMORTALS = "Mortals";
-
     //flavor text will not influence the actual actions going on, but will change how it is narratively
-  String flavorText = "";
-  List<GameEntity> livingTargets;
+  String flavorText = "Describe what happens in this scene in human words, based on what it targets and what it does to the targets. You can add a script tag to refer to the target or targets, but everything else should be your own words, including the Big Bads name.";
+  Set<GameEntity> livingTargets = new Set<GameEntity>();
   //can include moons or the battlefield
-  List<Land> landTargets;
+  Set<Land> landTargets = new Set<Land>();
 
-  //prefers land to living, otherwise first in list
-  bool oneTarget;
 
 
   //a valid target has all these conditions
   List<TargetConditionLiving> triggerConditionsLiving = new List<TargetConditionLiving>();
     List<TargetConditionLand> triggerConditionsLand = new List<TargetConditionLand>();
-  //TODO consider if i want a list of effects as well, might work to do things like "if summoned this way, have this effect"
-
+    List<EffectEntity> effectsForLiving = new List<EffectEntity>();
+    List<EffectLand> effectsForLands = new List<EffectLand>();
 
   String name = "Generic Scene";
 
   SerializableScene(Session session) : super(session);
 
-  void doAction();
+  void doAction() {
+      //empty, subscenes can have complicated thigns here
+  }
+
+  String getHeader() {
+      if(gameEntity is BigBad) return ">BigBadBullshit:";
+      if(gameEntity.villain) return ">Villany is Afoot:";
+      if(gameEntity is Carapace) return ">Carapace Capers:";
+      return ">Shenanigans: ";
+  }
 
   @override
   void renderContent(Element div) {
-      String displayText = "$flavorText";
-      displayText =   displayText.replaceAll("$BIGBADNAME", "${gameEntity.htmlTitle()}");
-      //if i some how have both, living target will be the one i pick.
-      //TODO replace shit.
-      DivElement content = new DivElement();
-      div.append(content);
-      content.setInnerHtml(displayText);
+      //session.logger.info("TEST BIG BAD: rendering content");
+
+      String displayText = "<br>${getHeader()} $flavorText";
+      displayText =   displayText.replaceAll("$TARGET", "${getTargetNames()}");
+      displayText =   displayText.replaceAll("$SCENE_OWNER", "${gameEntity.htmlTitleWithTip()}");
+
+      myElement = new DivElement();
+      div.append(myElement);
+      myElement.setInnerHtml("$displayText");
+      doEffects(); //automatic
+      doAction(); //specific to subclass
       //ANY SUB CLASSES ARE RESPONSIBLE FOR RENDERING CANVAS SHIT HERE, SO THEY CALL SUPER, THEN DO CANVAS
   }
 
-  void pickTarget() {
-      throw("TODO: map string target to a thing i'm looking for.");
-  }
-
-    void syncForm() {
-        form.syncDataBoxToScene();
-        if(gameEntity is BigBad) {
-            (gameEntity as BigBad).syncForm();
+    void removeCondition(TargetCondition c) {
+        String jsonString = c.toJSON().toString();
+        List<TargetCondition> allConditions = new List<TargetCondition>.from(triggerConditionsLiving);
+        allConditions.addAll(triggerConditionsLand);
+        for(TargetCondition s in allConditions) {
+            if (s.toJSON().toString() == jsonString) {
+                triggerConditionsLand.remove(s);
+                triggerConditionsLiving.remove(s);
+                return;
+            }
         }
     }
 
+    void removeEffect(ActionEffect e) {
+        String jsonString = e.toJSON().toString();
+        List<ActionEffect> allEffects = new List<ActionEffect>.from(effectsForLands);
+        allEffects.addAll(effectsForLiving);
+        for(ActionEffect s in allEffects) {
+            if (s.toJSON().toString() == jsonString) {
+                effectsForLands.remove(s);
+                effectsForLiving.remove(s);
+                return;
+            }
+        }
+    }
+
+  void doEffects() {
+      print("doing effect for $gameEntity, effects for living is $effectsForLiving, $effectsForLands");
+      for(ActionEffect e in effectsForLands) {
+          e.applyEffect();
+      }
+
+      for(ActionEffect e in effectsForLiving) {
+          e.applyEffect();
+      }
+      gameEntity.available = false;
+  }
+
+  Set<GameEntity> get finalLivingTargets {
+      if(livingTargets == null || livingTargets.isEmpty) return new Set<GameEntity>();
+      if(targetOne) {
+          return new Set<GameEntity>()..add(livingTargets.first);
+      }else {
+          return livingTargets;
+      }
+  }
+
+    Set<Land> get finalLandTargets {
+      if(landTargets == null || landTargets.isEmpty) return new Set<Land>();
+        if(targetOne) {
+            return new Set<Land>()..add(landTargets.first);
+        }else {
+            return landTargets;
+        }
+    }
+
+    //if i some how have both, living target will be the one i pick.
+    String getTargetNames() {
+      if(livingTargets.isNotEmpty) {
+          List<String> tmp = new List<String>();
+          for(GameEntity t in finalLivingTargets) {
+            tmp.add(t.htmlTitleWithTip());
+          }
+          return turnArrayIntoHumanSentence(new List<String>.from(tmp));
+      }else {
+          return turnArrayIntoHumanSentence(new List<Land>.from(finalLandTargets));
+      }
+
+  }
+
+void syncForm() {
+    form.syncDataBoxToScene();
+
+}
+
   void renderForm(Element container) {
+      print ("render form for scene");
       form = new SceneForm(this, container);
       form.drawForm();
   }
@@ -99,26 +166,71 @@ abstract class  SerializableScene extends Scene {
     }
 
     void copyFromDataString(String data) {
-        print("copying from data: $data, looking for labelpattern: $labelPattern");
+        //print("copying from data: $data, looking for labelpattern: $labelPattern");
         String dataWithoutName = data.split("$labelPattern")[1];
-        String rawJSON = LZString.decompressFromEncodedURIComponent(dataWithoutName);
+        //print("data without name is $dataWithoutName");
 
+        String rawJSON = LZString.decompressFromEncodedURIComponent(dataWithoutName);
+        //print("raw json is $rawJSON");
         JSONObject json = new JSONObject.fromJSONString(rawJSON);
         copyFromJSON(json);
     }
 
     void copyFromJSON(JSONObject json) {
         name = json["name"];
+        if(json["targetOne"] == "true") targetOne = true;
+        flavorText = json["flavorText"];
+        //print("name is $name and flavortext is $flavorText");
         String triggerContionsStringLiving = json["triggerConditionsLiving"];
         String triggerContionsStringLand = json["triggerConditionsLand"];
 
         loadTriggerConditionsLiving(triggerContionsStringLiving);
         loadTriggerConditionsLand(triggerContionsStringLand);
 
+
+        String effectsStringLiving = json["effectsForLiving"];
+       // print("effects string living is $effectsStringLiving");
+        String effectsStringLand = json["effectsForLands"];
+
+        loadEffectsLiving(effectsStringLiving);
+        loadEffectsLand(effectsStringLand);
     }
+
+    void loadEffectsLiving(String weirdString) {
+      if(weirdString == null) return;
+     // print('weird string is $weirdString');
+        List<dynamic> what = JSON.decode(weirdString);
+      //print('what is $what');
+
+      for(dynamic d in what) {
+            //print("dynamic json thing is  $d");
+            JSONObject j = new JSONObject();
+            j.json = d;
+           // print("about to tc");
+            ActionEffect tc = EffectEntity.fromJSON(j, this);
+           // print("action effect is $tc");
+            effectsForLiving.add(tc);
+        }
+    }
+
+    void loadEffectsLand(String weirdString) {
+        if(weirdString == null) return;
+        List<dynamic> what = JSON.decode(weirdString);
+        for(dynamic d in what) {
+            //print("dynamic json thing is  $d");
+            JSONObject j = new JSONObject();
+            j.json = d;
+            ActionEffect tc = EffectLand.fromJSON(j, this);
+            effectsForLands.add(tc);
+        }
+    }
+
+
+
 
     void loadTriggerConditionsLand(String weirdString) {
         List<dynamic> what = JSON.decode(weirdString);
+
         for(dynamic d in what) {
             //print("dynamic json thing is  $d");
             JSONObject j = new JSONObject();
@@ -127,6 +239,8 @@ abstract class  SerializableScene extends Scene {
             triggerConditionsLand.add(tc);
         }
     }
+
+
 
     void loadTriggerConditionsLiving(String weirdString) {
         List<dynamic> what = JSON.decode(weirdString);
@@ -137,12 +251,17 @@ abstract class  SerializableScene extends Scene {
             TargetCondition tc = TargetConditionLiving.fromJSON(j, this);
             triggerConditionsLiving.add(tc);
         }
+
     }
 
 
     JSONObject toJSON() {
         JSONObject json = new JSONObject();
         json["name"] = name;
+        json["flavorText"] = flavorText;
+
+        json["targetOne"] = targetOne.toString();
+
         List<JSONObject> triggerCondtionsArrayLiving = new List<JSONObject>();
         List<JSONObject> triggerCondtionsArrayLand = new List<JSONObject>();
 
@@ -157,7 +276,21 @@ abstract class  SerializableScene extends Scene {
         json["triggerConditionsLiving"] = triggerCondtionsArrayLiving.toString();
         json["triggerConditionsLand"] = triggerCondtionsArrayLand.toString();
 
-        print(json);
+
+        List<JSONObject> livingEffectsArray = new List<JSONObject>();
+        List<JSONObject> landEffectsArray = new List<JSONObject>();
+
+        for(ActionEffect s in effectsForLiving) {
+            livingEffectsArray.add(s.toJSON());
+        }
+
+        for(ActionEffect s in effectsForLands) {
+            landEffectsArray.add(s.toJSON());
+        }
+        //print("${triggerCondtionsArray.length} triggerConditions were serialized, ${triggerCondtionsArray}");
+        json["effectsForLiving"] = livingEffectsArray.toString();
+        json["effectsForLands"] = landEffectsArray.toString();
+
         return json;
     }
 
@@ -165,19 +298,37 @@ abstract class  SerializableScene extends Scene {
   //all trigger conditions must be true for this to be true.
   @override
   bool trigger(List<Player> playerList) {
+      //session.logger.info("TEST BIG BAD: checking triggers");
+      posedAsATeamAlready = false;
       landTargets.clear();
       livingTargets.clear();
-      livingTargets = session.npcHandler.allEntities;
-      landTargets = session.allLands;
+      livingTargets = new Set<GameEntity>.from(session.activatedNPCS); //not all, just active
+      //TODO should i also get party members for those npcs? otherwise can't get brain ghosts and robots and the like
+      for(Player p in session.players) {
+            if(p.active) {
+                livingTargets.add(p);
+                landTargets.add(p.land);
+            }
+      }
+
+     //session.logger.info("i think active targets is $livingTargets");
+
+      landTargets.addAll(session.moons);
+
+      livingTargets = new Set<GameEntity>.from(shuffle(session.rand, new List<GameEntity>.from(livingTargets)));
+      landTargets = new Set<Land>.from(shuffle(session.rand, new List<Land>.from(landTargets)));
 
 
       for(TargetConditionLiving tc in triggerConditionsLiving) {
-          livingTargets = tc.filter(livingTargets);
+          livingTargets = new Set<GameEntity>.from(tc.filter(new List<GameEntity>.from(livingTargets)));
       }
+      if(triggerConditionsLiving.isEmpty) livingTargets.clear();
+
 
       for(TargetConditionLand tc in triggerConditionsLand) {
-          landTargets = tc.filter(landTargets);
+          landTargets = new Set<Land>.from(tc.filter(new List<Land>.from(landTargets)));
       }
+      if(triggerConditionsLand.isEmpty) landTargets.clear();
 
 
       return landTargets.isNotEmpty || livingTargets.isNotEmpty;
@@ -194,57 +345,117 @@ class SceneForm {
     TextInputElement nameElement;
     TextAreaElement dataBox;
     TextAreaElement flavorText;
+    CheckboxInputElement targetOneElement;
+
+    Element targetLivingSection;
+    Element targetLandSection;
+    Element effectLivingSection;
+    Element effectLandSection;
 
 
     SceneForm(SerializableScene this.scene, parentContainer) {
         container = new DivElement();
-        container.style.border = "2px solid black";
-        container.style.padding = "10px";
-        container.style.marginTop = "10px";
+        container.classes.add("SceneDiv");
+
         parentContainer.append(container);
 
     }
 
     void drawForm() {
+        print("drawing new scene form");
         drawDataBox();
         drawDeleteButton();
         drawName();
         drawFlavorText();
+        drawTargetOne();
         drawAddTriggerConditionButton();
+        drawAddActionEffectButton();
 
     }
 
     void syncDataBoxToScene() {
         dataBox.value = scene.toDataString();
+        if(scene.gameEntity is BigBad) {
+            (scene.gameEntity as BigBad).syncForm();
+        }
     }
 
     void syncFormToScene() {
+        print("syncing form to scene");
         nameElement.value = scene.name;
+        flavorText.value = scene.flavorText;
+        targetOneElement.checked = scene.targetOne;
+
+        for (TargetCondition s in scene.triggerConditionsLiving) {
+            print("rendering form for living condition ${s.name}");
+            s.renderForm(targetLivingSection);
+        }
+
+        for (TargetCondition s in scene.triggerConditionsLand) {
+            print("rendering form for land condition ${s.name}");
+            s.renderForm(targetLandSection);
+        }
+
+        for (ActionEffect s in scene.effectsForLiving) {
+            print("rendering form for living effect ${s.name}");
+            s.renderForm(effectLivingSection);
+        }
+
+        for (ActionEffect s in scene.effectsForLands) {
+            print("rendering form for land effect ${s.name}");
+            s.renderForm(effectLandSection);
+        }
+        print("syncing data box to scene");
         syncDataBoxToScene();
     }
 
 
     void drawAddTriggerConditionButton() {
         //trigger conditions know how to add their own damn selves
+        DivElement tmp = new DivElement();
+        tmp.classes.add("filterSection");
+        targetLandSection = new DivElement();
+        targetLivingSection = new DivElement();
+        tmp.append(targetLivingSection);
+        tmp.append(targetLandSection);
+        container.append(tmp);
 
-        TargetConditionLiving.drawSelectTriggerConditions(container, scene);
-        TargetConditionLand.drawSelectTriggerConditions(container, scene);
+        TargetConditionLiving.drawSelectTriggerConditions(container, scene, targetLivingSection);
+        TargetConditionLand.drawSelectTriggerConditions(container, scene, targetLandSection);
+
+    }
+
+    void drawAddActionEffectButton() {
+        DivElement tmp = new DivElement();
+        tmp.classes.add("effectSection");
+        effectLandSection = new DivElement();
+        effectLivingSection = new DivElement();
+
+        tmp.append(effectLivingSection);
+        tmp.append(effectLandSection);
+        container.append(tmp);
+
+        //action effects know how to add their own damn selves
+        EffectEntity.drawSelectActionEffects(container, scene,effectLivingSection);
+        EffectLand.drawSelectActionEffects(container, scene,effectLandSection);
 
     }
 
 
+
     void drawDeleteButton() {
-        ButtonElement delete = new ButtonElement();
-        delete.text = "Remove Scene";
-        delete.onClick.listen((e) {
-            BigBad bigBad = scene.gameEntity as BigBad;
-            //don't bother knowing where i am, just remove from all
-            print("big bad has ${ bigBad.startMechanisms.length} start mechanisms. are any me? ${ bigBad.startMechanisms.contains(this)}");
-            bigBad.removeScene(scene);
-            container.remove();
-            bigBad.syncForm();
-        });
-        container.append(delete);
+        if(scene.gameEntity != null) {
+            ButtonElement delete = new ButtonElement();
+            delete.text = "Remove Scene";
+            delete.onClick.listen((e) {
+                BigBad bigBad = scene.gameEntity as BigBad;
+                //don't bother knowing where i am, just remove from all
+                bigBad.removeScene(scene);
+                container.remove();
+                bigBad.syncForm();
+            });
+            container.append(delete);
+        }
     }
 
     void drawName() {
@@ -263,30 +474,80 @@ class SceneForm {
         });
     }
 
+    void drawTargetOne() {
+        DivElement subContainer = new DivElement();
+        LabelElement nameLabel = new LabelElement();
+        nameLabel.text = "Target One Valid Target (vs target All Valid Targets):";
+        targetOneElement = new CheckboxInputElement();
+        targetOneElement.checked = scene.targetOne;
+
+        subContainer.append(nameLabel);
+        subContainer.append(targetOneElement);
+        container.append(subContainer);
+
+        targetOneElement.onChange.listen((e) {
+            if(targetOneElement.checked) {
+                scene.targetOne = true;
+            }else {
+                scene.targetOne = false;
+            }
+            syncDataBoxToScene();
+        });
+
+    }
+
 
     void drawFlavorText() {
         flavorText = new TextAreaElement();
-        flavorText.value = scene.toDataString();
+        flavorText.value = scene.flavorText;
         flavorText.cols = 60;
         flavorText.rows = 10;
-        flavorText.onChange.listen((e) {
+        flavorText.onInput.listen((e) {
             scene.flavorText = flavorText.value;
-            syncFormToScene();
+            syncDataBoxToScene();
         });
-        container.append(dataBox);
+
+        DivElement buttonDiv = new DivElement();
+        ButtonElement button = new ButtonElement();
+        button.text = "Append Target Name(s)";
+        button.onClick.listen((e) {
+            flavorText.value = "${flavorText.value} ${SerializableScene.TARGET}";
+            scene.flavorText = flavorText.value;
+            syncDataBoxToScene();
+        });
+        buttonDiv.append(button);
+
+        ButtonElement button2 = new ButtonElement();
+        button2.text = "Append Scene Owner Name";
+        button2.onClick.listen((e) {
+            flavorText.value = "${flavorText.value} ${SerializableScene.SCENE_OWNER}";
+            scene.flavorText = flavorText.value;
+            syncDataBoxToScene();
+        });
+        buttonDiv.append(button2);
+        container.append(flavorText);
+        container.append(buttonDiv);
     }
 
 
 
     void drawDataBox() {
+        print("drawing data box");
         dataBox = new TextAreaElement();
         dataBox.value = scene.toDataString();
         dataBox.cols = 60;
         dataBox.rows = 10;
         dataBox.onChange.listen((e) {
             print("syncing template to data box");
-            scene.copyFromDataString(dataBox.value);
-            syncFormToScene();
+            try {
+                scene.copyFromDataString(dataBox.value);
+                print("loaded scene");
+                syncFormToScene();
+                print("synced form to scene");
+            }catch(e) {
+                scene.session.logger.info(e);
+                window.alert("something went wrong! $e");
+            }
         });
         container.append(dataBox);
     }

@@ -5,6 +5,7 @@ import "dart:typed_data";
 import "../SBURBSim.dart";
 import "../includes/bytebuilder.dart";
 import "../navbar.dart";
+import '../includes/lz-string.dart';
 
 
 
@@ -24,8 +25,6 @@ class Player extends GameEntity{
     double moonChance = 0.0;
     num pvpKillCount = 0; //for stats.
     num timesDied = 0;
-    //mostly for dead sessions.
-    bool unconditionallyImmortal = false;
    static num maxHornNumber = 73; //don't fuck with this
     static num maxHairNumber = 74; //same
     Sprite sprite = null; //gets set to a blank sprite when character is created.
@@ -127,11 +126,13 @@ class Player extends GameEntity{
         _denizenDefeated = x;
     }
 
+    @override
+    String get name => "${title()}($chatHandle)";
+
 
     Player([Session session, SBURBClass this.class_name, Aspect this.aspect, GameEntity this.object_to_prototype, Moon m, bool this.godDestiny]) : super("", session) {
         //;
         moon = m; //set explicitly so triggers syncing.
-        this.name = "player_$id"; //this.htmlTitleBasic();
         //testing something
     }
 
@@ -209,6 +210,16 @@ class Player extends GameEntity{
         String x = (getParameterByName("x", bs));
         List<Player> players = dataBytesAndStringsToPlayers(session,b, s, x); //technically an array of one players.;
         this.copyFromPlayer(players[0]);
+    }
+
+    @override
+    List<Relationship> getQuadrants() {
+        List<Relationship> ret = new List<Relationship>();
+        ret.addAll(getHearts());
+        ret.addAll(getSpades());
+        ret.addAll(getDiamonds());
+        ret.addAll(getClubs());
+        return ret;
     }
 
     @override
@@ -290,9 +301,15 @@ class Player extends GameEntity{
     @override
     String makeDead(String causeOfDeath, GameEntity killer, [bool allowLooting = true]) {
         //session.logger.info("DEBUGGING MAKE DEAD making ${title()} dead $causeOfDeath");
-
+        String looting = "";
+        myKiller = killer;
         //can loot corpses even in life gnosis, or how else will things happen?
         if(killer != null && allowLooting) {
+            if(sylladex.inventory.isNotEmpty) {
+                looting = "$killer takes ${turnArrayIntoHumanSentence(sylladex.inventory)} as a trophy";
+            }else {
+                looting = "There was nothing to loot.";
+            }
             killer.lootCorpse(this);
         }
 
@@ -305,7 +322,9 @@ class Player extends GameEntity{
                 killer.npcKillCount ++;
             }
         }
-        String ret = "";
+        String ret = "${htmlTitle()} is dead. ";
+        bool alreadyDead = this.dead;
+
         this.dead = true;
         this.timesDied ++;
         this.stats.onDeath();
@@ -321,12 +340,18 @@ class Player extends GameEntity{
             prophecy = ProphecyState.FULLFILLED;
             ret += " The prophecy is fullfilled. ";
         }
-        if(canvas == null) initSpriteCanvas();
-        if(!Drawing.checkSimMode()) canvas.context2D.save(); //need to restore living state latr
-        this.renderSelf("makeDead");
-        this.triggerOtherPlayersWithMyDeath();
-        canvas.context2D.restore(); //only stay rotated long enough to render.
-        return ret;
+        if(!alreadyDead) {
+            if(canvas == null) initSpriteCanvas();
+            if(!Drawing.checkSimMode()) canvas.context2D.save(); //need to restore living state latr
+            this.renderSelf("makeDead");
+            this.triggerOtherPlayersWithMyDeath();
+            canvas.context2D.restore(); //only stay rotated long enough to render.
+        }
+
+        String bb = "";
+        if(killer != null) bb = killer.makeBigBad();
+
+        return "$ret $looting $bb";
     }
 
     void triggerOtherPlayersWithMyDeath() {
@@ -516,10 +541,17 @@ class Player extends GameEntity{
 
     @override
     String title() {
-        String ret = "";
+        String ret = "$extraTitle ";
+
+        if (this.villain) ret = "${ret}Villainous ";
+
 
         if(this.crowned != null) {
             ret = "${ret}Crowned ";
+        }
+
+        if(this.leader) {
+            //ret = "${ret}Leader ";
         }
 
         if (this.doomed) {
@@ -864,6 +896,7 @@ class Player extends GameEntity{
     bool justDeath() {
         if(session.mutator.rageField) return true; //you earned it, kid. no take backs.
         if(unconditionallyImmortal) return false;
+        if(villain) return true;//you earned it too.
         bool ret = false;
 
         //impossible to have a just death from a denizen or denizen minion. unless you are corrupt.
@@ -909,6 +942,10 @@ class Player extends GameEntity{
     bool heroicDeath() {
         if(unconditionallyImmortal) return false;
         bool ret = false;
+        //maybe you derp died, sure. but....probably this was heroic
+        if(myKiller.villain == true && session.rand.nextDouble() > 0.3) {
+            return true;
+        }
 
         //it's not heroic derping to death against a minion or whatever, or in a solo fight.
         if (this.didDenizenKillYou() || this.causeOfDeath == "from a Bad Break.") {
@@ -1577,6 +1614,7 @@ class Player extends GameEntity{
     }
 
     void decideTroll() {
+      //session.logger.info("Session of type: ${this.session.getSessionType()}");
         if (this.session.getSessionType() == "Human") {
             this.hairColor = session.rand.pickFrom(human_hair_colors);
             return;
@@ -1758,7 +1796,7 @@ class Player extends GameEntity{
 
     //take in a builder so when you do a group of players then can use same builder and no padding.
     String toDataBytesX(ByteBuilder builder) {
-        Map<String, dynamic> j = this.toJSON();
+        Map<String, dynamic> j = this.toJSONBrief();
         if (j["class_name"] <= 15 && j["aspect"] <= 15) { //if NEITHER have need of extension, just return size zero;
             builder.appendExpGolomb(0); //for length
             return BASE64URL.encode(builder.toBuffer().asUint8List());
@@ -1793,8 +1831,21 @@ class Player extends GameEntity{
         //as i add more things, add more lines. ALWAYS in same order, but not all features all the time.
     }
 
-    String toDataBytes() {
-        Map<String, dynamic> json = this.toJSON(); //<-- gets me data in pre-compressed format.
+    JSONObject toJSON() {
+      JSONObject json = super.toJSON();
+      json["ocDataString"] = toOCDataString();
+      //TODO eventually shove quirk and relationships into here
+      return json;
+    }
+
+    void copyFromJSON(String jsonString) {
+      super.copyFromJSON(jsonString);
+      JSONObject json = new JSONObject.fromJSONString(jsonString);
+      copyFromOCDataString(json["ocDataString"]);
+    }
+
+      String toDataBytes() {
+        Map<String, dynamic> json = this.toJSONBrief(); //<-- gets me data in pre-compressed format.
         //var buffer = new ByteBuffer(11);
         StringBuffer ret = new StringBuffer(); //gonna return as a string of chars.;
         Uint8List uint8View = new Uint8List(11);
@@ -1816,7 +1867,7 @@ class Player extends GameEntity{
         return Uri.encodeComponent(ret.toString()).replaceAll("#", '%23').replaceAll("&", '%26');
     }
 
-    Map<String, dynamic> toJSON() {
+    Map<String, dynamic> toJSONBrief() {
         num moonNum = 0;
         String cod = this.causeOfDrain;
         if (cod == null) cod = "";
@@ -1827,7 +1878,7 @@ class Player extends GameEntity{
 
     @override
     String toString() {
-        return ("${this.class_name}${this.aspect}").replaceAll(new RegExp(r"'", multiLine: true), ''); //no spaces.
+        return title(); //no spaces.
     }
 
     void copyFromPlayer(Player replayPlayer) {
@@ -1869,6 +1920,39 @@ class Player extends GameEntity{
         this.quirk.favoriteNumber = replayPlayer.quirk.favoriteNumber; //will get overridden, has to be after initialization, too, but if i don't do it here, char creartor will look wrong.
         this.makeGuardian();
         this.guardian.applyPossiblePsionics(); //now you have new psionics
+    }
+
+    static List<Player> processDataString(Session session, String dataString) {
+        session.logger.info("TEST DATASTRINGS: going to get players with dataString $dataString, which hopefully wasn't blank.");
+
+        if(session.prospit == null) session.setupMoons("getting replayers");
+        session.logger.info("TEST DATASTRINGS: finished setting up moon");
+
+
+        String params =  window.location.href.substring(window.location.href.indexOf("?") + 1);
+        String base = window.location.href.replaceAll("?$params","");
+        String bs = "${base}?" +dataString;
+
+        String b = (getParameterByName("b", bs));
+        String s = LZString.decompressFromEncodedURIComponent(Uri.encodeFull(getParameterByName("s", bs))); //these are NOT encoded in files, so make sure to encode them
+        String x = (getParameterByName("x", bs));
+
+        //;
+        if (b == null || s == null) return <Player>[];
+        if (b == "null" || s == "null") return <Player>[]; //why was this necesassry????????????????
+        session.logger.info("TEST DATASTRINGS: going to get players with b of $b and s  of $s and x of $x");
+
+        List<Player> ret =  dataBytesAndStringsToPlayers(session,b, s, x);
+        session.logger.info("TEST DATASTRINGS: got players, just need to process a bit");
+
+        //can't let them keep their null session reference.
+
+        for(Player p in ret) {
+            p.session = session;
+            p.syncToSessionMoon();
+            p.initialize();
+        }
+        session.logger.info("TEST DATASTRINGS: done processing data strings");
     }
 
     void initialize() {
@@ -1934,6 +2018,9 @@ class Player extends GameEntity{
     }
 
     void initializeSprite() {
+        if(object_to_prototype == null) {
+            object_to_prototype =  session.rand.pickFrom(PotentialSprite.prototyping_objects);
+        }
         this.sprite = new Sprite("sprite", session); //unprototyped.
         //minLuck, maxLuck, hp, mobility, triggerLevel, freeWill, power, abscondable, canAbscond, framotifs, grist
         this.sprite.stats.setMap(<Stat, num>{Stats.HEALTH: 10, Stats.CURRENT_HEALTH: 10}); //same as denizen minion, but empty power

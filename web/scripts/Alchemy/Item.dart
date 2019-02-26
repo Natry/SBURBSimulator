@@ -22,16 +22,7 @@ class Item implements Comparable<Item> {
     GameEntity owner;
 
 
-    static Iterable<Item> uniqueItemsWithTrait(ItemTrait trait) {
-        return Item.allUniqueItems.where((Item a) => (a.traits.contains(trait)));
-    }
 
-    //power of item
-    @override
-    int compareTo(Item other) {
-        //
-        return (other.rank - rank).sign.round(); //higher numbers first
-    }
 
     String baseName;
     bool isCopy;
@@ -106,9 +97,66 @@ class Item implements Comparable<Item> {
         return fullName;
     }
 
+    static Iterable<Item> uniqueItemsWithTrait(ItemTrait trait) {
+        return Item.allUniqueItems.where((Item a) => (a.traits.contains(trait)));
+    }
+
+    JSONObject toJSON() {
+        JSONObject json = new JSONObject();
+        json["name"] = baseName;
+
+
+        //just a list of strings
+        List<String> traitArray = new List<String>();
+        for(ItemTrait s in traits) {
+            traitArray.add(s.toString());
+        }
+        json["traits"] = traitArray.join(",");
+        return json;
+    }
+
+    void copyFromJSON(JSONObject json) {
+        print("trying to load item from json $json");
+        baseName = json["name"];
+
+        String traitsString = json["traits"];
+        loadTraits(traitsString);
+    }
+
+    void loadTraits(String weirdString) {
+        traits.clear();
+        List<String> traitStrings = weirdString.split(",");
+        for(String s in traitStrings) {
+            traits.add(ItemTraitFactory.itemTraitNamed(s));
+        }
+    }
+
+
+
+
+    //power of item
+    @override
+    int compareTo(Item other) {
+        //
+        return (other.rank - rank).sign.round(); //higher numbers first
+    }
+
     Item copy() {
-        Item ret =  new Item(baseName, new List<ItemTrait>.from(traits),isCopy:true, abDesc: this.abDesc, shogunDesc:this.shogunDesc);
-     //
+
+        Item ret;
+        if(this is Ring) {
+            ret =  new Ring.withoutOptionalParams(baseName, new List<ItemTrait>.from(traits));
+            (ret as MagicalItem).fraymotifs = new List<Fraymotif>.from((this as MagicalItem).fraymotifs);
+        }else if (this is Scepter) {
+            ret =  new Scepter.withoutOptionalParams(baseName, new List<ItemTrait>.from(traits));
+            (ret as MagicalItem).fraymotifs = new List<Fraymotif>.from((this as MagicalItem).fraymotifs);
+        }else if (this is MagicalItem) {
+            ret =  new MagicalItem.withoutOptionalParams(baseName, new List<ItemTrait>.from(traits));
+            (ret as MagicalItem).fraymotifs = new List<Fraymotif>.from((this as MagicalItem).fraymotifs);
+        }else {
+            ret =  new Item(baseName, new List<ItemTrait>.from(traits),isCopy:true, abDesc: this.abDesc, shogunDesc:this.shogunDesc);
+        }
+
         ret.numUpgrades = numUpgrades;
         ret.maxUpgrades = maxUpgrades;
         return ret;
@@ -175,6 +223,10 @@ class Item implements Comparable<Item> {
         }else {
             return "Actual Worthless Object";
         }
+    }
+
+    bool hasTrait(ItemTrait trait) {
+        return traits.contains(trait);
     }
 
     //it's sharp, it's pointy and it's a sword.   so can pick the same trait multiple times and just pick different words? Yes.
@@ -305,6 +357,13 @@ class Sylladex extends Object with IterableMixin<Item> {
         }
     }
 
+    void removeAll() {
+        List<Item> copy = new List<Item>.from(inventory);
+        for(Item i in copy) {
+            //
+            remove(i);
+        }
+    }
     Item get first => inventory.first;
 
     void remove(Item item) {
