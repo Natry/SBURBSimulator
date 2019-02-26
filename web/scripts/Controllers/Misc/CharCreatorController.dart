@@ -7,6 +7,7 @@ import "dart:async";
 CharCreatorController self;
 //only one session on this page
 Session session;
+
 Future<Null> main() async
 
 {

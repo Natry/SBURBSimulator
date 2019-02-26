@@ -181,6 +181,7 @@ class ItemTraitFactory {
   static ItemObjectTrait KNIFE;
   static ItemObjectTrait SCISSOR;
   static ItemObjectTrait SAFE;
+  static ItemObjectTrait PIZZACUTTER;
 
 
 
@@ -1262,6 +1263,7 @@ class ItemTraitFactory {
     new CombinedTrait("God Tier",<String>["God Tier"], 0.0,ItemTrait.CONDITION, <ItemTrait>[CLASSRELATED,ASPECTAL, REAL]);
     new CombinedTrait("Cod Tier",<String>["Cod Tier"], 0.0,ItemTrait.CONDITION, <ItemTrait>[CLASSRELATED,ASPECTAL, REAL, FAKE, CLOTH]);
     new CombinedTrait("Dog Tier",<String>["Dog Tier"], 0.0,ItemTrait.CONDITION, <ItemTrait>[CLASSRELATED,ASPECTAL, REAL,FUR]);
+    new CombinedTrait("JRPG", <String>["JRPG"], 0.0, ItemTrait.CONDITION, <ItemTrait>[SWORD,PIZZACUTTER,MAGICAL]);
 
     //another slurp
     new CombinedTrait("Cracked",<String>["Cracked"], 0.0,ItemTrait.CONDITION, <ItemTrait>[STONE,SHITTY]);
@@ -1328,6 +1330,7 @@ class ItemTraitFactory {
     GOLFCLUB = new ItemObjectTrait(<String>["a golf club"], 0.4,ItemTrait.SHAPE);
     KNIFE = new ItemObjectTrait(<String>["a knife"], 0.4,ItemTrait.SHAPE);
     SCISSOR = new ItemObjectTrait(<String>["scissors"], 0.4,ItemTrait.SHAPE);
+    PIZZACUTTER = new ItemObjectTrait(<String>["a pizza cutter"], 0.4, ItemTrait.SHAPE);
   }
 
   static void initAppearances() {

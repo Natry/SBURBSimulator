@@ -281,6 +281,20 @@ Player findClassPlayer(List<GameEntity> playerList, SBURBClass class_name) {
     return null;
 }
 
+Player findHelpPlayer(List<GameEntity> playerList) {
+    for (int i = 0; i < playerList.length; i++) {
+        GameEntity g = playerList[i]; //could be a sprite
+        if (g is Player) {
+            Player p = playerList[i];
+            if (p.class_name.isHelpful == true || p.class_name.isProtective == true) {
+                ////;
+                return p;
+            }
+        }
+    }
+    return null;
+}
+
 Player findMVP(List<Player> playerList) {
     if (playerList.isEmpty) return null;
     Player strongest = playerList[0];

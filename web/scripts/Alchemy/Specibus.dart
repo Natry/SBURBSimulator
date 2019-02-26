@@ -164,6 +164,7 @@ class SpecibusFactory {
         _specibi.add(new Specibus("Scissors", ItemTraitFactory.SCISSOR, [ ItemTraitFactory.METAL, ItemTraitFactory.EDGED],shogunDesc: "RunWithTheseKind",abjDesc:"Either you are a psycho or these are some VERY big fucking scissors."));
         _specibi.add(new Specibus("Safe", ItemTraitFactory.SAFE, [ ItemTraitFactory.METAL, ItemTraitFactory.HEAVY],shogunDesc: "TomAndFuckingJerryThemKind",abjDesc:"Treat it well or it will never reach Vaulthalla."));
         _specibi.add(new Specibus("Stick", ItemTraitFactory.STICK, [ ItemTraitFactory.WOOD, ItemTraitFactory.BLUNT],shogunDesc: "WeaponiseTheTreesKind",abjDesc:"Bitches love sticks"));
+        _specibi.add(new Specibus("Pizza Cutter", ItemTraitFactory.PIZZACUTTER, [ ItemTraitFactory.METAL, ItemTraitFactory.EDGED],shogunDesc: "HomeSliceKind",abjDesc:"I lack the taste buds necessary to weigh in on the pineapple debate"));
 
     }
 
