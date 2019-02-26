@@ -212,6 +212,13 @@ class Land extends Object with FeatureHolder {
             }
         }
 
+        if(session.rand.nextDouble() >.98 && session.rand.pickFrom(this.mainTheme.possibleNames) == "Frogs") {
+            List<String> frogWords = <String>["Yet More Frogs","Even More Frogs","Additional Frogs"];
+            name = "Land of ${session.rand.pickFrom(this.mainTheme.possibleNames)} and ${session.rand.pickFrom(frogWords)}";
+
+        }
+
+
         if(session.rand.nextDouble() >.99) {
             corrupted = true;
             List<String> corruptWords = <String>[Zalgo.generate("Google"), Zalgo.generate("Horrorterrors"), Zalgo.generate("Glitches"), Zalgo.generate("Grimoires"), Zalgo.generate("Fluthlu"), Zalgo.generate("The Zoologically Dubious")];
