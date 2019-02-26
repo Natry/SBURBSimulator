@@ -90,10 +90,10 @@ class FreeWillStuff extends Scene {
         String psionic = "";
         String pname = this.player.canMindControl();
         if (pname != null) {
-            session.logger.info("psychic powers used to mind control in session ");
+            //session.logger.info("psychic powers used to mind control in session ");
             psionic = " The " + this.player.htmlTitleBasic() + " uses their $pname. ";
         }else {
-            session.logger.info("actual aspect powers used to do mind control free will is ${player.getStat(Stats.FREE_WILL)}");
+            //session.logger.info("actual aspect powers used to do mind control free will is ${player.getStat(Stats.FREE_WILL)}");
         }
         appendHtml(div, "<br><img src = 'images/sceneIcons/freewill_icon.png'> " + psionic + this.content());
         if (this.playerGodTiered != null) {
@@ -159,9 +159,9 @@ class FreeWillStuff extends Scene {
 
     String considerEngagingMurderMode(Player player) {
         List<Player> enemies = player.getEnemiesFromList(findLiving(this.session.players));
-        if (player.isActive() && enemies.length > 2 && player.getStat(Stats.SANITY) < 0 && !player.murderMode && rand.nextDouble() > 0.98) {
+        if (player.isActive() && enemies.length > 2 && player.getStat(Stats.SANITY) < -500 && !player.murderMode && rand.nextDouble() > 0.98) {
             return this.becomeMurderMode(player);
-        } else if (enemies.length > 0 && player.getStat(Stats.SANITY) < 0 && rand.nextDouble() > 0.98) {
+        } else if (enemies.length > 0 && player.getStat(Stats.SANITY) < -500 && rand.nextDouble() > 0.98) {
             return this.forceSomeOneElseMurderMode(player);
         }
         return null;
@@ -171,7 +171,7 @@ class FreeWillStuff extends Scene {
         if (!player.murderMode) {
             List<Player> enemies = player.getEnemiesFromList(findLiving(this.session.players));
             if (this.isValidTargets(enemies, player)) {
-                //session.logger.info("chosing to go into murdermode " + this.session.session_id.toString());
+               // session.logger.info("chosing to go into murdermode");
                 player.makeMurderMode();
                 player.setStat(Stats.SANITY, -10);
                 session.removeAvailablePlayer(player);
@@ -329,7 +329,7 @@ class FreeWillStuff extends Scene {
 
         if (this.isValidTargets(enemies, player) && patsy != null) {
             if (patsyVal > enemies.length / 2 && patsy.getStat(Stats.SANITY) < 1) {
-                //session.logger.info("manipulating someone to go into murdermode " + this.session.session_id.toString() + " patsyVal = $patsyVal");
+               // session.logger.info("manipulating someone to go into murdermode patsyVal = $patsyVal");
                 patsy.makeMurderMode();
                 patsy.setStat(Stats.SANITY, -10);
                 session.removeAvailablePlayer(player);
@@ -612,7 +612,7 @@ class FreeWillStuff extends Scene {
         Player patsy = player.getWorstEnemyFromList(availablePlayers);
         if (patsy != null && !patsy.dead && patsy != murderer && patsy.getStat(Stats.FREE_WILL) < player.getStat(Stats.FREE_WILL)) { //they exist and I don't already control them.
             if (patsy.stateBackup == null) patsy.stateBackup = new MiniSnapShot(patsy);
-            ////session.logger.info(player.title() + " controlling player to kill murderer. " + this.session.session_id)
+            session.logger.info(" controlling player to kill murderer. " );
             patsy.nullAllRelationships();
             Relationship r = patsy.getRelationshipWith(murderer);
             r.value = -100;
@@ -675,7 +675,7 @@ class FreeWillStuff extends Scene {
         if (space != null && space.landLevel < this.session.goodFrogLevel && player.gnosis > 0 && player.grimDark < 2) { //grim dark players don't care about sburb
             if (player == space) {
                 ////session.logger.info(player.title() +" did their damn job breeding frogs. " +this.session.session_id);
-                space.increaseLandLevel(10.0);
+                space.increaseLandLevel(13.0);
                 session.removeAvailablePlayer(player);
                 return "The " + player.htmlTitle() + " is not going to fall into SBURB's trap. They know why frog breeding is important, and they are going to fucking DO it. ";
             } else {
@@ -688,11 +688,11 @@ class FreeWillStuff extends Scene {
                         session.removeAvailablePlayer(player);
                         session.removeAvailablePlayer(space);
                         ////session.logger.info(player.title() +" convinced space player to do their damn job. " +this.session.session_id);
-                        space.increaseLandLevel(10.0);
+                        space.increaseLandLevel(13.0);
                         return "The " + player.htmlTitle() + timeIntro + " is not going to to fall into SBURB's trap. They pester the " + space.htmlTitle() + " to do frog breeding, even if it seems useless. They bug and fuss and meddle and finally the " + space.htmlTitle() + " agrees to ...just FUCKING DO IT.";
                     } else if (player.getStat(Stats.POWER) > 50) {
                         ////session.logger.info(player.title() +" mind controlled space player to do their damn job. " +this.session.session_id);
-                        space.increaseLandLevel(10.0);
+                        space.increaseLandLevel(13.0);
                         session.removeAvailablePlayer(player);
                         session.removeAvailablePlayer(space);
                         String trait = this.getManipulatableTrait(player);

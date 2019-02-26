@@ -13,6 +13,7 @@ class GiveJackScepter extends Scene {
     bool strifeTime = false;
 
 
+
     @override
     void renderContent(Element div) {
         DivElement me = new DivElement();
@@ -29,6 +30,8 @@ class GiveJackScepter extends Scene {
             strife.startTurn(div);
         }
     }
+
+
 
     String getText() {
         Relationship r = gameEntity.getRelationshipWith(session.npcHandler.jack);

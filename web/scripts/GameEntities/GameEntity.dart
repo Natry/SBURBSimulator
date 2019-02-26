@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import "dart:html";
 import "dart:math" as Math;
 import "../SBURBSim.dart";
@@ -20,6 +21,9 @@ class GameEntity extends Object with StatOwner   {
     bool unconditionallyImmortal = false;
     //only a few big bads can't even be fought in the first place
     bool canStrife = true;
+
+    List<String> bannedScenes =<String>[];
+
     int playerKillCount = 0;
     bool addedSerializableScenes = false;
     int npcKillCount = 0;
@@ -32,7 +36,7 @@ class GameEntity extends Object with StatOwner   {
     String extraTitle = "";
 
     //mostly for big bads, but other things can have them, too
-    List<StopScene> stopMechanisms = new List<StopScene>();
+    List<StopScene> playerReactions = new List<StopScene>();
 
     //availibility set to false by scenes
     bool available = true;
@@ -86,7 +90,15 @@ class GameEntity extends Object with StatOwner   {
     bool ghost = false; //if you are ghost, you are rendered spoopy style
     bool brainGhost = false;
 
-    num grist = 100; //everything has it.
+    //depreciated, use pls stat system finally on 10/2/18 says jr
+    //num grist = 100; //everything has it.
+
+    num get grist => getStat(Stats.GRIST);
+
+    void set grist(num value) {
+        setStat(Stats.GRIST, value);
+    }
+
     bool dead = false;
     String causeOfDrain = null; //if it's ever not null they will be sideways
     bool exiled = false;
@@ -215,6 +227,7 @@ class GameEntity extends Object with StatOwner   {
     //my scenes can trigger behavior in other things that makes them unable to do their own scenes.
     //this is intended. probably.
     void processScenes() {
+       // UserTag previousTag = session.createDebugTag("Processing ${this.runtimeType} Scene");
 
         if(!addedSerializableScenes) {
             addSerializableScenes();
@@ -225,17 +238,29 @@ class GameEntity extends Object with StatOwner   {
             s.gameEntity = this;
             // ;
             //if one scene makes you unavailable no future scenes
-            if (this.available && s.trigger(session.getReadOnlyAvailablePlayers())) {
+            //EVEN THE DEAD MUST OBEY THE LAW (i.e. unvailable)
+            //also i guess requiring a scene overrides banning a scene???
+            if ((!bannedScenes.contains(s.name) &&(this.available && s.trigger(session.getReadOnlyAvailablePlayers())))) {
                 //session.scenesTriggered.add(s);
                 this.session.numScenes ++;
                 s.renderContent(this.session.newScene(s.runtimeType.toString()));
             }
+            //no need to keep looping, okay? just stop once you are done.
         }
 
         //otherwise will get conconrrent modification error. put at front, new things are important and shiny
        // if(scenesToAdd.isNotEmpty) print("TEST RECKONING: adding ${scenesToAdd.length} scenes to $this");
-        scenes.insertAll(0,scenesToAdd);
-        scenesToAdd.clear();
+        handleAddingNewScenes();
+
+       // previousTag.makeCurrent();
+    }
+
+    void handleAddingNewScenes() {
+        if(scenesToAdd.isNotEmpty) {
+            //print("adding $scenesToAdd to $this");
+            scenes.insertAll(0,scenesToAdd);
+            scenesToAdd.clear();
+        }
     }
 
 
@@ -268,11 +293,17 @@ class GameEntity extends Object with StatOwner   {
         sylladex = new Sylladex(this);
         //;
         //default non player thingy.
-        this.specibus = SpecibusFactory.CLAWS;
+        //if i don't copy this it eventually loses it's required trait and i don't know why
+        this.specibus = SpecibusFactory.CLAWS.copy();
         this.addBuff(new BuffSpecibus(this)); //programatic
         this.addBuff(new BuffLord(this)); //will only apply if you are a lord, but all have potential
        //crashes if(getStat(Stats.CURRENT_HEALTH) <= 0) setStat(Stats.CURRENT_HEALTH, 10);
         if(!(this is PotentialSprite) && session != null) session.npcHandler.allEntities.add(this);
+        //players don't start with grist and also null players will crash here cuz apparently no aspect = no stats
+        if(!(this is Player) && grist <= 0) {
+           // print("trying to set grist for $name");
+            grist = 113;
+        }
     }
 
     Iterable<AssociatedStat> get associatedStatsFromAspect => associatedStats.where((AssociatedStat c) => c.isFromAspect);
@@ -317,7 +348,7 @@ class GameEntity extends Object with StatOwner   {
         }
         return ret;
     }
-    
+
     //TODO grab out every method that current gameEntity, Player and PlayerSnapshot are required to have.
     //TODO make sure Player's @overide them.
 
@@ -371,7 +402,6 @@ class GameEntity extends Object with StatOwner   {
         clonege.stats = this; // copies the stats via StatOwner's stats setter! (also buffs)
         clonege.fontColor = fontColor;
         clonege.ghost = ghost; //if you are ghost, you are rendered spoopy style
-        clonege.grist = grist; //everything has it.
         clonege.dead = dead;
         clonege.ghostPacts = ghostPacts; //list of two element array [Ghost, enablingAspect]
         clonege.corrupted = corrupted; //players are corrupted at level 4. will be easier than always checking grimDark level
@@ -396,7 +426,7 @@ class GameEntity extends Object with StatOwner   {
 
     String checkDiedInAStrife(List<Team> enemyTeams) {
         if (getStat(Stats.CURRENT_HEALTH) <= 0) {
-            session.logger.info("${title()} died in a strife, hp is ${Stats.CURRENT_HEALTH}");
+            //session.logger.info("${title()} died in a strife, hp is ${Stats.CURRENT_HEALTH}");
 
             //TODO check for jack, king
             GameEntity jack = Team.findJackInTeams(enemyTeams);
@@ -447,11 +477,11 @@ class GameEntity extends Object with StatOwner   {
     //this won't be called if I CAN'T take a turn because i participated in fraymotif
     void takeTurn(Element div, Team mySide, List<Team> enemyTeams) {
         if (usedFraymotifThisTurn) {
-            session.logger.info("${title()} already participated in a fraymotif this turn");
+            //session.logger.info("${title()} already participated in a fraymotif this turn");
             return; //already did an attack.
         }
         if (mySide.absconded.contains(this)) {
-            session.logger.info("${title()} already absconded, can't take a turn");
+            //session.logger.info("${title()} already absconded, can't take a turn");
             return;
         }
         //if still dead, return, can't do anything.
@@ -489,7 +519,10 @@ class GameEntity extends Object with StatOwner   {
         if (this.session.rand.nextDouble() > 0.5 && !(this is Player)) return false; //don't use them all at once, dunkass. unless you are a player. fraymotifs 4 lyfe
         List<Fraymotif> usableFraymotifs = this.session.fraymotifCreator.getUsableFraymotifs(this, living_allies, living_enemies);
         if (crowned != null) { //ring/scepter has fraymotifs, too.  (maybe shouldn't let humans get thefraymotifs but what the fuck ever. roxyc could do voidy shit.)
-            usableFraymotifs.addAll(this.session.fraymotifCreator.getUsableFraymotifsMagicalItem(crowned, living_allies, living_enemies));
+            //jr from 9/25/18 says fuck no past jr, humans aren't allowed fryamotifs from teh rings/scepters.
+            if(this is Carapace || (this is Player && (this as Player).aspect == Aspects.SAUCE)){
+                usableFraymotifs.addAll(this.session.fraymotifCreator.getUsableFraymotifsMagicalItem(crowned, living_allies, living_enemies));
+            }
         }
         if (usableFraymotifs.isEmpty) return false;
         num mine = getStat(Stats.SANITY);
@@ -524,6 +557,11 @@ class GameEntity extends Object with StatOwner   {
     bool checkAbscond(Element div, Team mySide, List<Team> enemies) {
         if (!mySide.canAbscond) return false; //can't abscond, bro
         if (doomed) return false; //accept your fate.
+
+        if(2*getStat(Stats.MOBILITY) < Team.getTeamsStatTotal(enemies, Stats.MOBILITY)) return false; //not fast enough
+        if(2*getStat(Stats.MIN_LUCK) < Team.getTeamsStatTotal(enemies, Stats.MAX_LUCK)) return false; //not lucky enough enough
+        if(session.rand.nextBool()) return false; //its boring if its too consistent
+
         List<GameEntity> whoINeedToProtect = mySide.getLivingMinusAbsconded();
         num reasonsToLeave = 0;
         num reasonsToStay = 2; //generally prefer to win fights.
@@ -569,75 +607,42 @@ class GameEntity extends Object with StatOwner   {
 
     void aggrieve(Element div, GameEntity defense) {
         GameEntity offense = this; //easier for now.
+        //the less dom we do the faster it will be, build up the string manually
         String ret = "<br><Br> The ${offense.htmlTitleHP()} targets the ${defense.htmlTitleHP()} with their ${offense.specibus.fullName}. ";
         if(offense.specibus.traits.contains(ItemTraitFactory.CORRUPT)) {
             ret += " Uh. Wow. Should they be using that?";
             if(offense is Player) {
                 Player p = offense as Player;
                 p.corruptionLevelOther += 10; //no, they really shouldn't.
-                session.logger.info("corrupt specibus for player ${p.title()}, it's a ${p.specibus.fullName}");
+                //session.logger.info("corrupt specibus for player ${p.title()}, it's a ${p.specibus.fullName}");
             }
         }
         if (defense.dead) ret = "$ret Apparently their corpse sure is distracting? How luuuuuuuucky for the remaining players!";
-        appendHtml(div, ret);
 
-        //luck dodge
-        //alert("offense roll is: " + offenseRoll + " and defense roll is: " + defenseRoll);
-        //////session.logger.info("gonna roll for luck.");
-        if (defense.rollForLuck(Stats.MIN_LUCK) > offense.rollForLuck(Stats.MIN_LUCK) * 10 + 200) { //adding 10 to try to keep it happening constantly at low levels
-            //////session.logger.info("Luck counter: ${defense.htmlTitleHP()} ${this.session.session_id}");
-            appendHtml(div, "The attack backfires and causes unlucky damage. The ${defense.htmlTitleHP()} sure is lucky!!!!!!!!");
-            offense.addStat(Stats.CURRENT_HEALTH, -1 * offense.getStat(Stats.POWER) / 10); //damaged by your own power.
-            //this.processDeaths(div, offense, defense);
-            return;
-        } else if (defense.rollForLuck(Stats.MAX_LUCK) > offense.rollForLuck(Stats.MAX_LUCK) * 5 + 100) {
-           // ////session.logger.info("Luck dodge: ${defense.htmlTitleHP()} ${this.session.session_id}");
-            appendHtml(div, "The attack misses completely after an unlucky distraction.");
+        String luckCheck = Strife.checkLuck(ret,defense, offense);
+        if(luckCheck != null) {
+            DivElement tmp = new DivElement()..setInnerHtml(luckCheck);
+            div.append(tmp);
             return;
         }
-        //mobility dodge
-        int r = this.session.rand.nextIntRange(1, 100); //don't dodge EVERY time. oh god, infinite boss fights. on average, fumble a dodge every 4 turns.;
-        if (defense.getStat(Stats.POWER) > offense.getStat(Stats.POWER) * 10 + 200 && r > 25) {
-            //////session.logger.info("Mobility counter: ${defense.htmlTitleHP()} ${this.session.session_id}");
-            ret = ("The ${offense.htmlTitleHP()} practically appears to be standing still as they clumsily lunge towards the ${defense.htmlTitleHP()}");
-            if (defense.getStat(Stats.CURRENT_HEALTH) > 0) {
-                ret = "$ret. They miss so hard the ${defense.htmlTitleHP()} has plenty of time to get a counterattack in.";
-                offense.addStat(Stats.CURRENT_HEALTH, -1 * defense.getStat(Stats.POWER));
-            } else {
-                ret = "$ret. They miss pretty damn hard. ";
-            }
-            appendHtml(div, "$ret ");
-            //this.processDeaths(div, offense, defense);
 
-            return;
-        } else if (defense.getStat(Stats.MOBILITY) > offense.getStat(Stats.MOBILITY) * 5 + 100 && r > 25) {
-            //////session.logger.info("Mobility dodge: ${defense.htmlTitleHP()} ${this.session.session_id}");
-            appendHtml(div, " The ${defense.htmlTitleHP()} dodges the attack completely. ");
+        String mobilityCheck = Strife.checkMobility(ret,defense, offense );
+
+        if(mobilityCheck != null) {
+            DivElement tmp = new DivElement()..setInnerHtml(mobilityCheck);
+            div.append(tmp);
             return;
         }
-        //base damage
-        num hit = Math.max(1,offense.getStat(Stats.POWER));
-        num offenseRoll = offense.rollForLuck();
-        num defenseRoll = defense.rollForLuck();
-        //critical/glancing hit odds.
-        if (defenseRoll > offenseRoll * 2) { //glancing blow.
-            //////session.logger.info("Glancing Hit: " + this.session.session_id);
-            hit = hit / 2;
-            appendHtml(div, " The attack manages to not hit anything too vital. ");
-        } else if (offenseRoll > defenseRoll * 2) {
-            //////session.logger.info("Critical hit.");
-            ////////session.logger.info("Critical Hit: " + this.session.session_id);
-            hit = hit * 2;
-            appendHtml(div, " Ouch. That's gonna leave a mark. ");
-        } else {
-            //////session.logger.info("a hit.");
-            appendHtml(div, " A hit! ");
-        }
 
-
-        defense.addStat(Stats.CURRENT_HEALTH, -1 * hit);
+        String hitCheck = Strife.checkDamage(ret,defense, offense );
+        //it will definitely return a string
+        DivElement tmp = new DivElement()..setInnerHtml(hitCheck);
+        div.append(tmp);
+        //jr from 10/25/18 don't remember why this is commented out. probably fine???
         //this.processDeaths(div, offense, defense);
     }
+
+
 
 
     //currently only thing ghost pacts are good for post refactor.
@@ -741,11 +746,12 @@ class GameEntity extends Object with StatOwner   {
 
     //sets current hp to max hp. mostly called after strifes assuming you'll use healing items
     void heal() {
-        this.setStat(Stats.CURRENT_HEALTH, this.getStat(Stats.HEALTH));
+        //have at least one hp
+        this.setStat(Stats.CURRENT_HEALTH, Math.max(this.getStat(Stats.HEALTH),1));
     }
 
     String htmlTitleWithTip() {
-        String ret = "";
+        String ret = "$extraTitle ";
         if (this.crowned != null) ret = "${ret}Crowned ";
         String pname = this.name;
         if (pname == "Yaldabaoth") {
@@ -760,10 +766,13 @@ class GameEntity extends Object with StatOwner   {
     //will be diff for carapaces
     List<Fraymotif> get fraymotifsForDisplay {
         List<Fraymotif> ret = new List<Fraymotif>.from(fraymotifs);
-        for(Item item in sylladex) {
-            if(item is MagicalItem) {
-                MagicalItem m = item as MagicalItem;
-                if(!(m is Ring) && !(m is Scepter) ) ret.addAll(m.fraymotifs);
+        if(this is Carapace) {
+            for (Item item in sylladex) {
+                if (item is MagicalItem) {
+                    MagicalItem m = item as MagicalItem;
+                    if (!(m is Ring) && !(m is Scepter)) ret.addAll(
+                        m.fraymotifs);
+                }
             }
         }
        // ;
@@ -798,18 +807,45 @@ class GameEntity extends Object with StatOwner   {
         Iterable<Stat> as = Stats.summarise;
         ret += "<td class = 'toolTipSection'>Stats<hr>";
         for (Stat stat in as) {
-            ret += "$stat: ${getStat(stat).round()}<br>";
+            int baseValue = getStat(stat,true).round(); //113 lets say
+            int derivedValue = getStat(stat).round(); //120 lets say
+            ret += "$stat: ${baseValue} (+ ${derivedValue-baseValue})<br>";
         }
+        ret += "Grist: $grist)<br>";
 
         ret += "</td>";
+
+        ret += "<td class = 'toolTipSection'>Companions<hr>";
+        for(GameEntity g in companionsCopy) {
+            String species  = "";
+            if(g is Leprechaun) species = "(Leprechaun)";
+            if(g is Consort) species = "(Consort)";
+            if(g is Carapace && (g as Carapace).type == Carapace.DERSE) species = "(Dersite)";
+            if(g is Carapace && (g as Carapace).type == Carapace.PROSPIT) species = "(Prospitian)";
+
+            ret += "${g.title()} $species<br>";
+        }
 
 
         ret += "</td><td class = 'toolTipSection' rowspan='2'>Sylladex<hr>";
         ret += "Specibus: ${specibus.fullNameWithUpgrade}, Rank: ${specibus.rank}<br><br>";
 
+
+
         for(Item item in sylladex) {
             ret += "${item.fullNameWithUpgrade}<br>";
         }
+
+        ret += "</td><td class = 'toolTipSection' rowspan='2'>AI<hr>";
+
+        for (Scene s in scenes) {
+            if(s is SerializableScene) {
+                ret += "${s}<br>";
+            }else {
+                ret += "???<br>";
+            }
+        }
+
         ret += "</td><td class = 'toolTipSection' rowspan='2'>Buffs<hr>";
 
 
@@ -839,8 +875,14 @@ class GameEntity extends Object with StatOwner   {
         copyFromJSON(rawJSON);
     }
 
+    void copyFromDataStringTemplate(String data) {
+        String dataWithoutName = data.split("$labelPattern")[1];
+        String rawJSON = LZString.decompressFromEncodedURIComponent(dataWithoutName);
+        copyFromJSONTemplate(rawJSON);
+    }
+
     String toDataString() {
-        print("data is ${toJSON()}");
+        //print("data is ${toJSON()}");
         return  "$name$labelPattern${LZString.compressToEncodedURIComponent(toJSON().toString())}";
     }
 
@@ -850,7 +892,7 @@ class GameEntity extends Object with StatOwner   {
         json["description"] = description;
         json["canStrife"] = canStrife.toString();
         json["unconditionallyImmortal"] = unconditionallyImmortal.toString();
-        json["serializableSceneStrings"] = serializableSceneStrings.toString();
+        json["serializableSceneStrings"] = serializableSceneStrings.join(",");
 
         List<JSONObject> sceneArray = new List<JSONObject>();
         for(Scene s in scenes) {
@@ -872,11 +914,12 @@ class GameEntity extends Object with StatOwner   {
         json["fraymotifs"] = fraymotifArray.toString();
 
         List<JSONObject> statArray = new List<JSONObject>();
-        for(Stat s in stats) {
+        Iterable<Stat> as = Stats.summarise;
+        for(Stat s in as) {
             //i'm not sure how to get a stats value from inside itself so....*shrug*
            JSONObject j = new JSONObject();
            j["name"] = s.name;
-           j["value"] = "${getStat(s)}";
+           j["value"] = "${getStatHolder().getBase(s)}";
            statArray.add(j);
         }
         json["stats"] = statArray.toString();
@@ -884,28 +927,34 @@ class GameEntity extends Object with StatOwner   {
     }
 
     void copyFromJSON(String jsonString) {
-        print("trying to copy from json");
+        //print("trying to copy from json $jsonString");
         JSONObject json = new JSONObject.fromJSONString(jsonString);
         name = json["name"];
         description = json["description"];
         canStrife = json["canStrife"] == "true"? true : false ;
         unconditionallyImmortal = json["unconditionallyImmortal"] == "true" ? true : false ;
-        serializableSceneStrings = json["serializableSceneStrings"].split(",");
+
+        if(json["serializableSceneStrings"] != null) {
+            String tmp = json["serializableSceneStrings"];
+            tmp = tmp.replaceAll("[", "");
+            tmp = tmp.replaceAll("]", ""); //just in case it's using the old fucking shit
+            serializableSceneStrings = tmp.split(",");
+        }
 
         String statString = json["stats"];
         loadStats(statString);
-        print("loaded stats");
+        //print("loaded stats");
 
         String fraymotifString = json["fraymotifs"];
         loadFraymotifs(fraymotifString);
-        print("loaded fraymotifs");
+       // print("loaded fraymotifs");
 
-        specibus.copyFromJSON(new JSONObject.fromJSONString(json["specibus"]));
-        print("loaded specibus");
+        if(json["specibus"] != null) specibus.copyFromJSON(new JSONObject.fromJSONString(json["specibus"]));
+        //print("loaded specibus");
 
         String sylladexString = json["sylladex"];
         loadSylladex(sylladexString);
-        print("loaded sylladex");
+        //print("loaded sylladex");
 
 
         String scenesString = json["scenes"];
@@ -915,15 +964,40 @@ class GameEntity extends Object with StatOwner   {
 
         String stopScenesString = json["stopMechanisms"];
 
-        loadStopMechanisms(stopScenesString);
+        if(stopScenesString != null) loadStopMechanisms(stopScenesString);
 
+        if(grist <130) {
+            grist = getStat(Stats.EXPERIENCE)*100+100;
+        }
+
+    }
+
+    //don't load everything, just the things the template can set
+    void copyFromJSONTemplate(String jsonString) {
+        //print("trying to copy from json $jsonString");
+        JSONObject json = new JSONObject.fromJSONString(jsonString);
+        name = json["name"];
+
+        String statString = json["stats"];
+        loadStats(statString);
+        //print("loaded stats");
+
+        String fraymotifString = json["fraymotifs"];
+        loadFraymotifs(fraymotifString);
+        // print("loaded fraymotifs");
+
+        if(json["specibus"] != null) specibus.copyFromJSON(new JSONObject.fromJSONString(json["specibus"]));
+        //print("loaded specibus");
+
+        String sylladexString = json["sylladex"];
+        loadSylladex(sylladexString);
     }
 
     void loadScenes(String weirdString) {
         if(weirdString == null) return;
         List<dynamic> what = JSON.decode(weirdString);
         for(dynamic d in what) {
-            print("dynamic json thing for action scene is is  $d");
+            //print("dynamic json thing for action scene is is  $d");
             JSONObject j = new JSONObject();
             j.json = d;
             SerializableScene ss = new SerializableScene(session);
@@ -945,28 +1019,36 @@ class GameEntity extends Object with StatOwner   {
             StopScene ss = new StopScene(session);
             ss.originalOwner = this;
             ss.copyFromJSON(j);
-            stopMechanisms.add(ss);
+            playerReactions.add(ss);
         }
-        print ("loaded stop mechanisms $stopMechanisms");
+        //print ("loaded stop mechanisms $playerReactions");
+    }
+
+    //players call this on intro, everything else in the grabActivatedX loops. not sure if dead session players will call this? i want them to
+    void activateTasks() {
+        heal();
+        applyStopMechanisms();
     }
 
     void applyStopMechanisms() {
-        if(stopMechanisms.isEmpty) return;
+       // print("looking for stop mechanisms to apply, found $playerReactions");
+        if(playerReactions.isEmpty) return;
         for(Player p in session.players) {
             //please don't try to defeat yourself.
             if(p!=this) {
-                for(StopScene ss in stopMechanisms) {
+                for(StopScene ss in playerReactions) {
+                   // print("giving player $p the stop reaction $ss");
                     ss.gameEntity = p;
                     p.scenesToAdd.add(ss);
                 }
             }
         }
         //only happens once.
-        stopMechanisms.clear();
+        playerReactions.clear();
     }
 
     void loadStats(String weirdString) {
-        print("trying to decode weirdString $weirdString");
+        //print("trying to decode weirdString $weirdString");
         if(weirdString == null) return;
         List<dynamic> what = JSON.decode(weirdString);
         for(dynamic d in what){
@@ -975,6 +1057,8 @@ class GameEntity extends Object with StatOwner   {
             Stat stat = Stats.byName[j["name"]];
             setStat(stat, num.parse(j["value"]));
         }
+        if(grist <= 113) grist = getStat(Stats.EXPERIENCE,true);
+        heal();
     }
 
     void loadFraymotifs(String weirdString) {
@@ -982,7 +1066,7 @@ class GameEntity extends Object with StatOwner   {
         if(weirdString == null) return;
         List<dynamic> what = JSON.decode(weirdString);
         for(dynamic d in what) {
-            print("d is $d");
+            //print("d is $d");
             JSONObject j = new JSONObject();
             j.json = d;
             Fraymotif ss = new Fraymotif("",0);
@@ -992,12 +1076,12 @@ class GameEntity extends Object with StatOwner   {
     }
 
     void loadSylladex(String weirdString) {
-        print ("weird string is $weirdString");
+        //print ("weird string is $weirdString");
         sylladex.inventory.clear();
         if(weirdString == null) return;
         List<dynamic> what = JSON.decode(weirdString);
         for(dynamic d in what) {
-            print("sylladex d is $d");
+            //print("sylladex d is $d");
             Item ss = new Item("",<ItemTrait>[]);
             JSONObject j = new JSONObject();
             j.json = d;
@@ -1007,11 +1091,11 @@ class GameEntity extends Object with StatOwner   {
     }
 
     void addSerializableScenes() {
-        session.logger.info("adding serializable scenes for $this");
+        //session.logger.info("adding serializable scenes for $this, they are $serializableSceneStrings");
         //don't do this right nwo, but when i do it makes their ai a little harder to predict
         //serializableSceneStrings.shuffle();
         for(String s in serializableSceneStrings) {
-            addSerializalbeSceneFromString(s);
+            if(s!= null && s.isNotEmpty) addSerializalbeSceneFromString(s);
         }
     }
 
@@ -1022,30 +1106,41 @@ class GameEntity extends Object with StatOwner   {
         return ret;
     }
 
-    SerializableScene removeSerializableSceneFromString(String s) {
+    List<SerializableScene> removeSerializableSceneFromString(String s) {
         SerializableScene ret = new SerializableScene(session)..copyFromDataString(s);
+        //print("I want to remove $ret");
         List<SerializableScene> toRemove = new List<SerializableScene>();
-        for(Scene s in scenes) {
-            if(s is SerializableScene) {
-                SerializableScene ss = s as SerializableScene;
-                if(ss.toDataString() == s) toRemove.add(ss);
+        for(Scene scene in scenes) {
+            if(scene is SerializableScene) {
+                SerializableScene ss = scene as SerializableScene;
+                if(ss.toDataString() == s) {
+                    //print ("i found $ret in scenes");
+                    toRemove.add(ss);
+                }
             }
         }
 
-        for(Scene s in scenesToAdd) {
-            if(s is SerializableScene) {
-                SerializableScene ss = s as SerializableScene;
-                if(ss.toDataString() == s) toRemove.add(ss);
+        for(Scene scene in scenesToAdd) {
+            if(scene is SerializableScene) {
+                SerializableScene ss = scene as SerializableScene;
+                if(ss.toDataString() == s) {
+                    //print("i found $ret in scenes to add");
+                    toRemove.add(ss);
+                }
             }
         }
 
         for(SerializableScene ss in toRemove) {
+            //print("I'm trying to remove $ss");
             scenes.remove(ss);
             scenesToAdd.remove(ss);
         }
 
-        scenesToAdd.add(ret);
-        return ret;
+        //JR from 9/13/18 says: WHY THE FUCK DID PAST JR REMOVE THE SCENE TWO DIFFERNET WAYS AND THEN JUST ADD IT RIGHT BACK IN
+        //a;lsdkfjas;lfjas;dlfj
+        //...probably from a copy pasta typo. jessus fuck
+        //scenesToAdd.add(ret);
+        return toRemove;
     }
 
 
@@ -1098,6 +1193,8 @@ class GameEntity extends Object with StatOwner   {
         //so no concurrent mods (wouldu try to loop on items even as it removes items)
         List<Item> tmp = new List<Item>.from(corpse.sylladex.inventory);
         if(corpse != this) sylladex.addAll(tmp);
+        grist += corpse.grist;
+        corpse.grist = 0;
     }
 
     //generally called from makeDead
@@ -1106,21 +1203,23 @@ class GameEntity extends Object with StatOwner   {
     String makeBigBad() {
         String reason = "";
         if(unconditionallyImmortal) {
-            reason = " because if they don't stop them, who will?";
-            villain = true;
+            //turning this off cuz it happens too much
+           // reason = " because if they don't stop them, who will?";
+            //villain = true;
         }else if(landKillCount >=1 ) {
             reason = "because you can't just go around blowing up planets!";
             villain = true;
-        }else if(playerKillCount > 4 && ((this is Player && (this as Player).murderMode))) {
+        }else if(playerKillCount > 4 ) {
             //players count 3 x a s much as an npc
             reason = "because they have killed so many already.";
             villain = true;
-        }else if(npcKillCount > 12 && ((this is Player && (this as Player).murderMode))) {
+        }else if(npcKillCount > 12 ) {
             reason = "because npc victims or not, the ${htmlTitle()} is on a murderous rampage. ";
             villain = true;
-        }else if(getStat(Stats.POWER) > 10 * Stats.POWER.average(session.players)) {
-            reason = "because no one being should have all that power and use it to kill."; //hums along
-            villain = true;
+        }else if(getStat(Stats.POWER) > 13000 * Stats.POWER.average(session.players) && session.players.length > 2 ) {
+            //turning this off cuz its actually a bit op
+            //reason = "because no one being should have all that power and use it to kill."; //hums along
+            //villain = true;
         }
 
         if(!reason.isEmpty) {
@@ -1143,7 +1242,7 @@ class GameEntity extends Object with StatOwner   {
             }
             if(killer != null && allowLooting) {
                 if(sylladex.inventory.isNotEmpty) {
-                    looting = "${killer.htmlTitleWithTip()} takes ${turnArrayIntoHumanSentence(sylladex.inventory)} as a trophy";
+                    looting = "${killer.htmlTitleWithTip()} takes ${turnArrayIntoHumanSentence(sylladex.inventory)} as a trophy.";
                     killer.lootCorpse(this);
                 }else {
                     looting = "There was nothing to loot.";
@@ -1151,7 +1250,7 @@ class GameEntity extends Object with StatOwner   {
             }
         }
         String bb = "";
-        if(killer != null) bb = killer.makeBigBad();
+        if(killer != null && !villain && killer != this) bb = killer.makeBigBad();
         return "${htmlTitle()} is dead. $looting $bb";
     }
 

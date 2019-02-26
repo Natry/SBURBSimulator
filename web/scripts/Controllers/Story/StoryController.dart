@@ -26,6 +26,13 @@ Future<Null> main() async {
   loadNavbar();
   new StoryController(); //will set this as SimController's instance variable.
   if(getParameterByName("seed",null) != null){
+    if(getParameterByName("seed",null) == "owowhatsthis") {
+      String message = "ERROR: UNAUTHORIZED ROOT ACCESS DETECTED.  ASPECT OF VIOLATION DETECTED:  LIFE. REPORT <a href = 'http://www.farragofiction.com/PaldemicSim/login?username=owowhatsthis'>SUBMITTED</a> TO LOCAL DOOM PLAYER.";
+      SimController.instance.storyElement.setInnerHtml("$message <br><Br>");
+      AnchorElement a = new AnchorElement(href: "http://www.farragofiction.com/PaldemicSim/login?username=owowhatsthis")..text = "View Report?";
+      SimController.instance.storyElement.append(a);
+      throw(message);
+    }
    // Math.seed = getParameterByName("seed");  //TODO replace this somehow
     SimController.instance.initial_seed = int.parse(getParameterByName("seed",null));
   }else{
@@ -41,7 +48,6 @@ Future<Null> main() async {
 
 Future<Null> startSession() async {
   Session session = new Session(SimController.instance.initial_seed);
-  checkEasterEgg(session);
   await session.startSession();
   print("I think the session stopped!");
 }

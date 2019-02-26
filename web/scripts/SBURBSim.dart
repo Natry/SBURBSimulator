@@ -30,6 +30,7 @@ export "GameEntities/Stats/statholder.dart";
 export "formats/FileFormat.dart";
 export "loader/loader.dart";
 export "fraymotif.dart";
+export "FraymotifEffect.dart";
 export "Lands/Theme.dart";
 export "Lands/Feature.dart";
 export "Lands/Land.dart";
@@ -53,7 +54,7 @@ export "GameEntities/NPCRelationship.dart";
 export "handle_sprites.dart";
 export "Rendering/renderer.dart";
 export "AfterLife.dart";
-export "v2.0/ImportantEvents.dart";
+export "ImportantEvents/ImportantEvents.dart";
 export "Strife.dart";
 export "GameEntities/GameEntity.dart";
 export "GameEntities/NPCS.dart";
@@ -99,7 +100,6 @@ Future<Null> globalInit() async {
     FeatureFactory.init(); //do BEFORE classes or aspects or you're gonna have a bad time (null features) PL figured this out
     SBURBClassManager.init();
     Aspects.init();
-
     InterestManager.init();
 
     Loader.init();
@@ -161,7 +161,7 @@ bool printCorruptionMessage(Session session, ErrorEvent e) {
 
     }else if (session.players.isEmpty) {
         appendHtml(story, "<BR>ERROR: USELESS 0 PLAYER SESSION DETECTED.");
-        recomendedAction = ":/ REALLY? WHAT DID YOU THINK WAS GOING TO HAPPEN HERE, THE FREAKING *CONSORTS* WOULD PLAY THE GAME. ACTUALLY, THAT'S NOT HALF BAD AN IDEA. INTO THE PILE. ${mutatorsInPlay(session)}";
+        recomendedAction = ":/ REALLY? WHAT DID YOU THINK WAS GOING TO HAPPEN HERE??? THE CARAPACES WOULD SOMEHOW BREED A FROG??? ${mutatorsInPlay(session)}";
     } else if (session.players.length < 2 ) {
         appendHtml(story, "<BR>ERROR: DEAD SESSION DETECTED.");
         String url = "dead_index.html?seed=${session.session_id}&${generateURLParamsForPlayers(<Player>[session.players[0]],true)}";
@@ -354,7 +354,7 @@ String joinList<T>(Iterable<T> list, [String joiner = ""]) => joinCollection(lis
 void appendHtml(Element element, String html, [bool force = false]) {
     //TODO does this break anything?
     if(!(SimController.instance is AuthorBot) || force) {
-        element.appendHtml(html, treeSanitizer: NodeTreeSanitizer.trusted);
+        element.appendHtml(html, treeSanitizer: NodeTreeSanitizer.trusted,validator: new NodeValidatorBuilder()..allowElement("span"));
     }else {
        // ;
     }

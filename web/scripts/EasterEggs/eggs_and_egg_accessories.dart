@@ -22,7 +22,10 @@ void changeCanonState(Session session,String state) {
 	//CanonLevel
 	if(state == "canonOnly") session.canonLevel = CanonLevel.CANON_ONLY;
 	if(state == "fanonOnly") session.canonLevel = CanonLevel.FANON_ONLY;
-	if(state == "everythingFuckingGoes") session.canonLevel = CanonLevel.EVERYTHING_FUCKING_GOES;
+
+	if(state == "everythingFuckingGoes") {
+		session.canonLevel = CanonLevel.EVERYTHING_FUCKING_GOES;
+	}
 
 }
 
@@ -106,6 +109,18 @@ void sbahjMode(Session session){
 		bardQuestMode(session);
 	}
 
+	if (getParameterByName("tables", null) == "guarded") {
+		session.tableGuardianMode = true;
+		session.activateAllCarapaces();
+	}
+
+	//ultimate showdown of ultimate destiny
+	if (getParameterByName("destiny", null) == "ultimate") {
+		session.ultimateShowdown = true;
+		//cant just do it in summon scenes cuz without valid target it might not do a thing
+		session.activateAllBigBads();
+	}
+
 	if (getParameterByName("lollipop", null) == "true") {
 		tricksterMode(session);
 	}
@@ -122,17 +137,17 @@ void sbahjMode(Session session){
 		babyStuckMode(session);
 	}
 
-	if(session.session_id == 413){
+	if(session.session_id == 413 || "${session.session_id}".endsWith("413")){
 		session413(session);
-	}else if(session.session_id == 612){
+	}else if(session.session_id == 612 || "${session.session_id}".endsWith("612")){
 		session612(session);
 	}else if(session.session_id == 613){
 		session613(session);
-	}else if(session.session_id == 1025){
+	}else if(session.session_id == 1025 ||"${session.session_id}".endsWith("1025")){
 		session1025(session);
 	}else if(session.session_id == 33){
 		session33(session);
-	}else if(session.session_id == 111111){
+	}else if(session.session_id == 111111 || "${session.session_id}".endsWith("111111")){
 		session111111(session);
 	}else if(session.session_id == 88888888){
 		session88888888(session);
@@ -375,6 +390,13 @@ void tricksterMode(Session session){
 
 void debugRoyalRumble(Session session){
 	if(!doNotRender) window.alert("royal rumble!");
+
+	for(GameEntity bb in session.npcHandler.bigBads) {
+		if(bb.name.contains("Empress")) {
+			bb.active = true;
+		}
+	}
+
 	for(num j = 0; j<session.players.length; j++){
 		var p = session.players[j];
 		p.isTroll = true; //only .evel 2 players up
@@ -1008,6 +1030,7 @@ void session420(Session session){
 void session13(Session session) {
     session.mutator.metaHandler.initalizePlayers(session,true);
 	session.players = new List<Player>.from(session.mutator.metaHandler.metaPlayers); //just blow them away.
+	session.players.remove(session.mutator.metaHandler.feudalUltimatum);//shogun said to do this
     //will this be enough to get shogun in?
     if(session.aliensClonedOnArrival.isNotEmpty) {
     	//window.alert("adding shogun");

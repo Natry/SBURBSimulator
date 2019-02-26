@@ -1,5 +1,6 @@
 import '../../SBURBSim.dart';
 import '../../navbar.dart';
+import 'dart:developer';
 import 'dart:html';
 import 'dart:async';
 import 'dart:typed_data';
@@ -259,9 +260,13 @@ class SessionFinderController extends AuthorBot { //works exactly like Sim unles
 
   //stripped out tournament stuff, that'll be a different controller.
   @override
-  SessionSummary summarizeSession(Session session) {
-    ////;
-    print("summarizing: ${session}");
+  SessionSummary summarizeSession(Session session, Duration duration) {
+    if(session.stats.isComboedInto) {
+      return summarizeNextStep(session, null);
+    }
+    print("summarizing: ${session}, duration is $duration");
+    //UserTag previousTag = session.createDebugTag("SummarizingSession");
+
     backup = SimController.instance.storyElement.text;
     //SimController.instance.clearElement(SimController.instance.storyElement);
     //don't summarize the same session multiple times. can happen if scratch happens in reckoning, both point here.
@@ -272,17 +277,21 @@ class SessionFinderController extends AuthorBot { //works exactly like Sim unles
     }
     sessionsSimulated.add(session.session_id);
     SessionSummary sum = session.generateSummary();
-
+    sum.duration = duration;
     allSessionsSummaries.add(sum);
     sessionSummariesDisplayed.add(sum);
     //printSummaries();  //this slows things down too much. don't erase and reprint every time.
     var str = sum.generateHTML();
-    debug("<br><hr>${sessionsSimulated.indexOf(session.session_id)}<font color = 'red'> AB: " + getQuipAboutSession(sum) + "</font><Br>" );
+    debug("<br><hr>${sessionsSimulated.indexOf(session.session_id)}<font color = 'red'> AB: " + getQuipAboutSession(sum) + "</font>" );
     debug(str);
     printStats(null,null,null); //no filters here
     numSimulationsDone ++;
     initial_seed = session.rand.nextInt(); //child session
     ////;
+    return summarizeNextStep(session, sum);
+  }
+
+  SessionSummary summarizeNextStep(Session session, SessionSummary sum) {
     if(numSimulationsDone >= numSimulationsToDo){
       round ++;
       (querySelector("#button")as ButtonElement).disabled =false;
@@ -304,6 +313,8 @@ class SessionFinderController extends AuthorBot { //works exactly like Sim unles
       //RESETTING the mutator so that wastes can't leak into other sessions
       getMVP(session);
       new SessionMutator(); //will auto set itself to instance, handles resetting whatever needs resetting in other files
+      //previousTag.makeCurrent();
+
       window.requestAnimationFrame((num t){
         Session session = new Session(SimController.instance.initial_seed);
         startSessionThenSummarize(session);
@@ -367,6 +378,8 @@ class SessionFinderController extends AuthorBot { //works exactly like Sim unles
   }
 
   void printStats(List<String> filters, List<SBURBClass> classes, List<Aspect> aspects) {
+    //UserTag previousTag = currentSessionForErrors.createDebugTag("PrintingStats");
+
     MultiSessionSummary mms;
     if(sessionSummariesDisplayed.isEmpty) {
       mms = new MultiSessionSummary(); //don't try to collate nothing, wont' fail gracefully like javascript did
@@ -435,6 +448,7 @@ class SessionFinderController extends AuthorBot { //works exactly like Sim unles
       }
 
     }
+    //previousTag.makeCurrent();
 
   }
   @override

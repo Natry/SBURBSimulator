@@ -1,6 +1,7 @@
 import "dart:html";
 import "navbar.dart";
 import "SBURBSim.dart";
+import "dart:math" as Math;
 /*
   Though this FEELS like it should take a back burner to the general refactoring effort, the fact
   remains that GameEntities, Players and PlayerSnapshots are all treated as interchangeable
@@ -69,7 +70,7 @@ class Strife {
         checkForSuddenEnding(div); //everyone is killed. or absconded in denizen case. calls processEnding on own.
         bool over = strifeEnded();
         if (over || strifeIsOver) {
-            session.logger.info("I think the strife is over after $turnsPassed turns");
+            //session.logger.info("I think the strife is over after $turnsPassed turns");
             Team winner = findWinningTeam();
             if (winner != null) {
                 winner.won = true;
@@ -304,6 +305,86 @@ class Strife {
             if (p is Player) ret.add(p);
         }
         return ret;
+    }
+
+    static String checkDamage(String ret, GameEntity defense, GameEntity offense) {
+        //base damage, don't do negative damage please.
+        num hit = Math.max(1,offense.getStat(Stats.POWER));
+        //use min luck to prevent bad things and max luck to shoot for good things
+        num offenseRoll = offense.rollForLuck(Stats.MAX_LUCK);
+        num defenseRoll = defense.rollForLuck(Stats.MIN_LUCK);
+        //critical/glancing hit odds.
+        if (defenseRoll > offenseRoll * 2) { //glancing blow.
+            //////session.logger.info("Glancing Hit: " + this.session.session_id);
+            hit = hit / 2;
+            ret = "$ret The attack manages to not hit anything too vital. ";
+        } else if (offenseRoll > defenseRoll * 2) {
+            //////session.logger.info("Critical hit.");
+            ////////session.logger.info("Critical Hit: " + this.session.session_id);
+            hit = hit * 2;
+            ret = "$ret Ouch. That's gonna leave a mark. ";
+        } else {
+            //////session.logger.info("a hit.");
+            ret ="$ret A hit! ";
+        }
+        defense.addStat(Stats.CURRENT_HEALTH, -1 * hit);
+        return ret;
+    }
+
+
+        //the defender uses max luck since it would be a good thing if it missed, the offender uses min luck since it would be  bad
+    static String checkLuck(String ret, GameEntity defense, GameEntity offense) {
+        double total = defense.getStat(Stats.MAX_LUCK).abs() + offense.getStat(Stats.MIN_LUCK).abs();
+        //print("total luck is $total");
+        if(total < 3333)  return null;
+
+        //luck dodge
+        //alert("offense roll is: " + offenseRoll + " and defense roll is: " + defenseRoll);
+        //////session.logger.info("gonna roll for luck.");
+        String light = "";
+        if(defense.session.mutator.lightField) {
+            light = "Defense Max Luck: ${defense.getStat(Stats.MAX_LUCK)}, Offense Min Luck: ${ offense.getStat(Stats.MIN_LUCK).abs()}";
+        }
+        if (defense.rollForLuck(Stats.MAX_LUCK) > offense.rollForLuck(Stats.MIN_LUCK) * 10 + 200) { //adding 10 to try to keep it happening constantly at low levels
+            //////session.logger.info("Luck counter: ${defense.htmlTitleHP()} ${this.session.session_id}");
+            ret= "$ret The attack backfires and causes unlucky damage. The ${defense.htmlTitleHP()} sure is lucky!!!!!!!! $light";
+            offense.addStat(Stats.CURRENT_HEALTH, -1 * offense.getStat(Stats.POWER) / 10); //damaged by your own power.
+            //this.processDeaths(div, offense, defense);
+            return ret;
+        } else if (defense.rollForLuck(Stats.MAX_LUCK) > offense.rollForLuck(Stats.MIN_LUCK) * 5 + 100) {
+            // ////session.logger.info("Luck dodge: ${defense.htmlTitleHP()} ${this.session.session_id}");
+            ret= "$ret The attack misses completely after an unlucky distraction.";
+            return ret;
+        }
+    }
+
+    //if i don't return anything, assume nothing happened and ignore me
+    static String  checkMobility(String ret, GameEntity defense, GameEntity offense) {
+        //if you aren't together at least a LITTLE impressive, don't even bother calculating this
+        //this way if one of them is impressive and the other isn't it still goes
+        if(defense.getStat(Stats.MOBILITY).abs() + offense.getStat(Stats.MOBILITY).abs() < 3333)  return null;
+
+        //mobility dodge
+        int r = defense.session.rand.nextIntRange(1, 100); //don't dodge EVERY time. oh god, infinite boss fights. on average, fumble a dodge every 4 turns.;
+
+        if (defense.getStat(Stats.MOBILITY) > offense.getStat(Stats.MOBILITY) * 10 && r > 25) {
+            //////session.logger.info("Mobility counter: ${defense.htmlTitleHP()} ${this.session.session_id}");
+            ret = ("The ${offense.htmlTitleHP()} practically appears to be standing still as they clumsily lunge towards the ${defense.htmlTitleHP()}");
+            if (defense.getStat(Stats.CURRENT_HEALTH) > 0) {
+                ret = "$ret. They miss so hard the ${defense.htmlTitleHP()} has plenty of time to get a counterattack in.";
+                offense.addStat(Stats.CURRENT_HEALTH, -1 * defense.getStat(Stats.POWER));
+            } else {
+                ret = "$ret. They miss pretty damn hard. ";
+            }
+            //this.processDeaths(div, offense, defense);
+
+            return ret;
+        } else if (defense.getStat(Stats.MOBILITY) > offense.getStat(Stats.MOBILITY) * 5 && r > 25) {
+            //////session.logger.info("Mobility dodge: ${defense.htmlTitleHP()} ${this.session.session_id}");
+            ret = "$ret The ${defense.htmlTitleHP()} dodges the attack completely. ";
+            return ret;
+        }
+        return null;
     }
 }
 

@@ -1,3 +1,5 @@
+import '../PlayerSpriteHandler.dart';
+import 'dart:async';
 import 'dart:convert';
 import "dart:html";
 import "dart:math" as Math;
@@ -14,9 +16,6 @@ class Player extends GameEntity{
     num baby = null;
     CanvasElement firstStatsCanvas;
     bool canSkaia = false; //unlocked by finishing quests or by quest bed god tiering.
-
-    @override
-    num grist = 0; // players do not spawn with grist
 
     //set when you set moon, so you know what your dream self looks like even if you don't have a moon.
     Palette dreamPalette;
@@ -193,7 +192,7 @@ class Player extends GameEntity{
 
     ///not the only way to get grist, but you get a small base amount just for doing that shit
     void increaseLandLevel([double points = 1.0]) {
-        landLevel += 0.1; //TESTING what right value is to balance with FrogRewards
+        landLevel += points; //TESTING what right value is to balance with FrogRewards
        increaseGrist();
     }
 
@@ -246,8 +245,8 @@ class Player extends GameEntity{
                 //only sauce players can use the ring
                 ret.addAll(m.fraymotifs);
             }else if(Item is MagicalItem) {
-                MagicalItem m = item as MagicalItem;
-                if(!(m is Ring) && !(m is Scepter) ) ret.addAll(m.fraymotifs);
+                //MagicalItem m = item as MagicalItem;
+                //if(!(m is Ring) && !(m is Scepter) ) ret.addAll(m.fraymotifs);
             }
         }
         return ret;
@@ -276,6 +275,9 @@ class Player extends GameEntity{
         if (render) {
             this.renderSelf("changeGrimDark");
         }
+        //jr of 10/22/2018 says that this might help keep things from acting weird
+        //this.grimDark = Math.min(4,this.grimDark); //don't be higher than 4
+        //this.grimDark = Math.max(0,this.grimDark); //don't be lower than 0.
     }
 
     void makeMurderMode() {
@@ -349,7 +351,8 @@ class Player extends GameEntity{
         }
 
         String bb = "";
-        if(killer != null) bb = killer.makeBigBad();
+        //no you can't be a villain for dying randomly or killing yourself
+        if(killer != null && !villain && killer != this) bb = killer.makeBigBad();
 
         return "$ret $looting $bb";
     }
@@ -653,8 +656,12 @@ class Player extends GameEntity{
         Iterable<Stat> as = Stats.summarise;
         ret += "<td class = 'toolTipSection'>Stats<hr>";
         for (Stat stat in as) {
-            ret += "$stat: ${getStat(stat).round()}<br>";
+            int baseValue = getStat(stat,true).round();
+            int derivedValue = getStat(stat).round();
+            ret += "$stat: ${baseValue} (+ ${derivedValue-baseValue})<br>";
         }
+        ret += "Grist: $grist)<br>";
+
 
         ret += "</td>";
         ret += "<td class = 'toolTipSection'>Companions<hr>";
@@ -673,6 +680,16 @@ class Player extends GameEntity{
 
         for(Item item in sylladex) {
             ret += "${item.fullNameWithUpgrade}<br>";
+        }
+
+        ret += "</td><td class = 'toolTipSection' rowspan='2'>AI<hr>";
+
+        for (Scene s in scenes) {
+            if(s is SerializableScene) {
+                ret += "${s}<br>";
+            }else {
+                ret += "???<br>";
+            }
         }
 
 
@@ -943,7 +960,7 @@ class Player extends GameEntity{
         if(unconditionallyImmortal) return false;
         bool ret = false;
         //maybe you derp died, sure. but....probably this was heroic
-        if(myKiller.villain == true && session.rand.nextDouble() > 0.3) {
+        if(myKiller != null && myKiller.villain == true && session.rand.nextDouble() > 0.3) {
             return true;
         }
 
@@ -1701,10 +1718,12 @@ class Player extends GameEntity{
     }
 
     void renderSelf(String caller) {
-       // ;
         if(Drawing.checkSimMode()) return;
         if (canvas == null) this.initSpriteCanvas();
         this.clearSelf();
+        //TODO someday tackle the headache that would be needed to make all of rendering async
+        //await PlayerSpriteHandler.drawSpriteFromScratch(canvas, this);
+
         Drawing.drawSpriteFromScratch(canvas, this);
     }
 
@@ -1894,12 +1913,14 @@ class Player extends GameEntity{
         this.bloodColor = replayPlayer.bloodColor;
         this.leftHorn = replayPlayer.leftHorn;
         this.specibus = replayPlayer.specibus.copy();
+        print("specibus is $specibus with traits ${specibus.traits}, required trait is ${specibus.requiredTrait}, the replay player has ${replayPlayer.specibus} with traits ${replayPlayer.specibus.traits} required trait is ${replayPlayer.specibus.requiredTrait}");
         this.rightHorn = replayPlayer.rightHorn;
         this.interest1 = replayPlayer.interest1;
         this.interest2 = replayPlayer.interest2;
 
         this.causeOfDrain = replayPlayer.causeOfDrain;
         this.causeOfDeath = replayPlayer.causeOfDeath;
+        //print("TEST CUSTOM: replay player's chat handle is ${replayPlayer.chatHandle}");
         if (replayPlayer.chatHandle != "") {
             this.chatHandle = replayPlayer.chatHandle;
             this.deriveChatHandle = false;

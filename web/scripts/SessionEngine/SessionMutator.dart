@@ -146,13 +146,22 @@ class SessionMutator {
         s.logger.info("AB: Huh. Looks like a ${activatingPlayer.title()} is going at it.");
         effectsInPlay ++;
         bloodField = true;
-        String ret = "The ${activatingPlayer.htmlTitle()} begins to glow amid a field of code the color of old and fresh blood. ";
-        ret += "Skaia decided they couldn't save everyone. That only SOME of their friends were destined to play the game. ";
-        ret += " They reject this rule entirely. They find a place in the code where more players exist, but aren't active yet, ";
-        ret += " And change things until they are classified as active.  They collaborate with the time player as needed, but they get the ";
-        ret += " copies of the game to their other friends before it's too late. Their friends join. They seem....wrong.  Like Skaia isn't extending them whatever rights real Player have. ";
-        ret += "Still. It's better than being dead. The ${activatingPlayer.htmlTitle()} sets up various ways to keep people cooperating and sane while they are at it. ";
-        //the blood player tries to save their friends who WERN'T destined to play this game.
+        String ret = "";
+        if(activatingPlayer.session.players.length < 20) {
+            ret = "The ${activatingPlayer.htmlTitle()} begins to glow amid a field of code the color of old and fresh blood. ";
+            ret += "Skaia decided they couldn't save everyone. That only SOME of their friends were destined to play the game. ";
+            ret += " They reject this rule entirely. They find a place in the code where more players exist, but aren't active yet, ";
+            ret += " And change things until they are classified as active.  They collaborate with the time player as needed, but they get the ";
+            ret += " copies of the game to their other friends before it's too late. Their friends join. They seem....wrong.  Like Skaia isn't extending them whatever rights real Player have. ";
+            ret += "Still. It's better than being dead. The ${activatingPlayer.htmlTitle()} sets up various ways to keep people cooperating and sane while they are at it. ";
+
+        }else {
+            ret = "The ${activatingPlayer.htmlTitle()} begins to glow amid a field of code the color of old and fresh blood. ";
+            ret += "Skaia decided they couldn't save everyone. That only SOME of their friends were destined to play the game. ";
+            ret += " They try to reject this rule entirely, but JR says that that's too many fucking players and AB is getting sad. They fail to bring new players into the session. ";
+
+        }
+            //the blood player tries to save their friends who WERN'T destined to play this game.
         //TODO rewrite guardian code so classes are a remix of players, not random and repeatable
         List<Player> newPlayers = getGuardiansForPlayers(s.players);
         //I wonder if Skaia approves of you bringing random people into the game? oh well, at least they aren't dead!
@@ -193,10 +202,16 @@ class SessionMutator {
             }
         }
 
-        /*
-          TODO:
-          *  once npc update, all npcs are set to "ally" state, even things that are not normally possible.
-       */
+
+        //JR of 10/28/18 says, oh fuck i forgot to have blood players befriend ALL THE THINGS post npc update
+        if(activatingPlayer.session.activatedNPCS.isNotEmpty) {
+            ret = "$ret The ${activatingPlayer} also gives an inspiring speech that convinces the ${turnArrayIntoHumanSentence(activatingPlayer.session.activatedNPCS)} to help them out.";
+            for(GameEntity g in activatingPlayer.session.activatedNPCS) {
+                activatingPlayer.session.logger.debug("adding companion $g to blood player $activatingPlayer");
+                activatingPlayer.addCompanion(g);
+            }
+        }
+
         return ret;
     }
 
@@ -977,6 +992,10 @@ class MetaPlayerHandler {
     Player makeFU(Session s) {
         s.logger.info("Making fu");
         Player player = randomPlayerNoDerived(s, SBURBClassManager.PAGE, Aspects.VOID);
+
+        player.deriveSpecibus = false;
+        player.specibus = new Specibus("Sauce", ItemTraitFactory.PIGEON, [ ItemTraitFactory.CORRUPT, ItemTraitFactory.OBSCURING]);
+        print("fu has specibus ${player.specibus}");
         player.quirk = randomHumanQuirk(s.rand);
 
         player.copyFromOCDataString("b=%C2%80%40%009%C3%BEU%04%17%0F%258&s=,,Classism,Genocide,feudalUltimatum&x=nkgA");
@@ -1007,8 +1026,6 @@ class MetaPlayerHandler {
         player.object_to_prototype = new PotentialSprite("Aku", s);
         player.sprite.addPrototyping(player.object_to_prototype);
 
-        player.deriveSpecibus = false;
-        player.specibus = new Specibus("Sauce", ItemTraitFactory.PIGEON, [ ItemTraitFactory.CORRUPT, ItemTraitFactory.OBSCURING]);
 
 
         Fraymotif f = new Fraymotif("Shitpost For Dear Life", 13);
