@@ -66,6 +66,7 @@ class Player extends GameEntity{
     String hairColor = null;
     bool dreamSelf = true;
     bool isTroll = false; //later
+    bool isSquidNow = false;
     String bloodColor = "#ff0000"; //human red.
     num leftHorn = null;
     num rightHorn = null;
@@ -1635,6 +1636,12 @@ class Player extends GameEntity{
         if (this.session.getSessionType() == "Human") {
             this.hairColor = session.rand.pickFrom(human_hair_colors);
             return;
+        }
+
+        if (this.session.getSessionType() == "Inkling") {
+          this.hairColor = "#610061";
+          this.isSquidNow = true;
+          return;
         }
 
         if (this.session.getSessionType() == "Troll" || (this.session.getSessionType() == "Mixed" && rand.nextDouble() > 0.5)) {

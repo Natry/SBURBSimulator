@@ -97,7 +97,6 @@ class IntroNew extends IntroScene {
               ////session.logger.info("initially unlucky player: " +this.session.session_id);
               narration += " They have special powers, including " + turnArrayIntoHumanSentence(this.player.fraymotifs) + ". ";
           }
-
           if(this.player.dead==true){
               //session.logger.info(session.session_id.toString() + " dead player enters, " +this.player.title());
               narration+= "Wait. What?  They are DEAD!? How did that happen? Shenenigans, probably. I...I guess their GHOST or something is making sure their house and corpse makes it into the medium? And their client player, as appropriate. Their kernel somehow gets prototyped with a "+this.player.object_to_prototype.htmlTitle() + ". ";

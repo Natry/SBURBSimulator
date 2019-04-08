@@ -1591,10 +1591,13 @@ class Session {
     String getSessionType() {
         if(sessionType < 0 ) sessionType = rand.nextDouble();
        // logger.info("session type is $sessionType");
-        if (this.sessionType > .6) {
+        if (this.sessionType > .75) {
             return "Human";
-        } else if (this.sessionType > .3) {
+        } else if (this.sessionType > .5) {
             return "Troll";
+        }
+        else if (this.sessionType > .25) {
+            return "Inkling";
         }
         return "Mixed";
     }
