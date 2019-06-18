@@ -1641,6 +1641,7 @@ class Player extends GameEntity{
         if (this.session.getSessionType() == "Inkling") {
           this.hairColor = "#610061";
           this.isSquidNow = true;
+          this.hairColor = "#ffffff";
           return;
         }
 
@@ -1924,7 +1925,7 @@ class Player extends GameEntity{
         this.rightHorn = replayPlayer.rightHorn;
         this.interest1 = replayPlayer.interest1;
         this.interest2 = replayPlayer.interest2;
-
+        this.isSquidNow = replayPlayer.isSquidNow;
         this.causeOfDrain = replayPlayer.causeOfDrain;
         this.causeOfDeath = replayPlayer.causeOfDeath;
         //print("TEST CUSTOM: replay player's chat handle is ${replayPlayer.chatHandle}");
@@ -2314,6 +2315,7 @@ class Player extends GameEntity{
         ret.interest2 = player.interest2;
         ret.stats = player;
         ret.dreamPalette = player.dreamPalette;
+        ret.isSquidNow = player.isSquidNow;
         //;
         if(saveCanvas && player.canvas != null) {
             ret.canvas = player.canvas; //you're just for rendering

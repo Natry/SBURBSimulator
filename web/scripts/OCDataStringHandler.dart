@@ -385,7 +385,7 @@ dynamic dataBytesAndStringsToPlayer(Session session, String charString, List<Str
   player.leftHorn = charString.codeUnitAt(8);
   player.rightHorn = charString.codeUnitAt(9);
   player.hair = charString.codeUnitAt(10);
-
+  if(player.hair >=76 && player.hair <= 250) player.isSquidNow = true;
   ;
   return player;
 }

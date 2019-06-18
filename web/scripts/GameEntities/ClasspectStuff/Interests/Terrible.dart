@@ -12,7 +12,7 @@ class Terrible extends InterestCategory {
     List<String> handles1 = <String>["tyranical", "heretical", "murderous", "persnickety", "mundane", "killer", "rough", "sneering", "hateful", "bastard", "pungent", "wasted", "snooty", "wicked", "perverted", "master", "hellbound"];
 
     @override
-    List<String> handles2 = <String>["Butcher", "Blasphemer", "Barbarian", "Tyrant", "Superior", "Bastard", "Dastard", "Despot", "Bitch", "Horror", "Victim", "Hellhound", "Devil", "Demon", "Shark", "Lupin", "Mindflayer", "Mummy", "Hoarder", "Demigod"];
+    List<String> handles2 = <String>["Butcher", "Blasphemer", "Barbarian", "Tyrant", "Superior", "Bastard", "Dastard", "Despot", "Bitch", "Horror", "Victim", "Hellhound", "Devil", "Demon", "Shark", "Lupin", "Mindflayer", "Mummy", "Hoarder", "Demigod","Iconoclast","Infidel"];
 
     @override
     List<String> levels = <String>["ENEMY #1", "JERKWAD JOURNEYER"];
