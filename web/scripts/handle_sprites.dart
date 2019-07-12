@@ -88,6 +88,16 @@ abstract class ReferenceColours {
         ..shirt_dark = "#797979"
         ..pants_light = "#494949"
         ..pants_dark = "#393939";
+
+    static AspectPalette Ink_Aspect = new AspectPalette()
+        ..aspect_light = '#EFEFEF'
+        ..aspect_dark = '#080808'
+        ..shoe_light = '#EFEFEF'
+        ..shoe_dark = '#080808'
+        ..cloak_light = '#EFEFEF'
+        ..cloak_dark = '#080808'
+        ..shirt_dark = '#080808'
+        ..pants_dark = '#080808';
 }
 
 abstract class Drawing {
@@ -1597,11 +1607,13 @@ abstract class Drawing {
         }
         if (!baby && player.godTier) {
             PaletteSwapCallback callback = aspectPalletSwap;
+            if (player.aspect == Aspects.INK) callback = inkPalletSwap;
             if (player.trickster) callback = candyPalletSwap;
             if (player.robot) callback = robotPalletSwap;
             drawWhateverWithPalleteSwapCallback(canvas, playerToCowl(player), player, callback);
         }
 
+        if (player.aspect == Aspects.INK) inkPalletSwap(canvas,player);
         if (player.robot == true) {
             roboSkin(canvas); //, player);
         } else if (player.trickster == true) {
@@ -1763,7 +1775,7 @@ abstract class Drawing {
         if (player.sbahj) {
             sbahjifier(canvas);
         }
-        if (player.isTroll) {
+        if (player.isTroll || player.aspect == Aspects.INK) {
             swapColors(canvas, ReferenceColours.HAIR, new Colour.fromStyleString(player.hairColor));
             swapColors(canvas, ReferenceColours.HAIR_ACCESSORY, new Colour.fromStyleString(player.bloodColor));
         } else {
@@ -1782,7 +1794,7 @@ abstract class Drawing {
         if (player.sbahj) {
             sbahjifier(canvas);
         }
-        if (player.isTroll) {
+        if (player.isTroll || player.aspect == Aspects.INK) {
             swapColors(canvas, ReferenceColours.HAIR, new Colour.fromStyleString(player.hairColor));
             swapColors(canvas, ReferenceColours.HAIR_ACCESSORY, new Colour.fromStyleString(player.bloodColor));
         } else {
@@ -1902,10 +1914,23 @@ abstract class Drawing {
         if (player.sbahj) {
             sbahjifier(canvas);
         }
-        aspectPalletSwap(canvas, player);
+        if (player.aspect == Aspects.INK) inkPalletSwap(canvas, player);
+         else aspectPalletSwap(canvas, player);
         //aspectSymbol(canvas, player);
     }
 
+    static void inkSprite(CanvasElement canvas, Player player) {
+        String imageString = playerToRegularBody(player);
+        CanvasRenderingContext2D ctx = canvas.getContext('2d');
+        addImageTag(imageString);
+        ImageElement img = imageSelector(imageString);
+        ctx.drawImage(img, 0, 0);
+        if (player.sbahj) {
+            sbahjifier(canvas);
+        }
+        inkPalletSwap(canvas, player);
+        //aspectSymbol(canvas, player);
+    }
 
     static void dreamSprite(CanvasElement canvas, Player player) {
         String imageString = playerToDreamBody(player);
@@ -1934,7 +1959,8 @@ abstract class Drawing {
         if (bardQuest && player.class_name == SBURBClassManager.BARD) {
             drawWhatever(canvas, "/Bodies/cod.png");
         }
-        aspectPalletSwap(canvas, player);
+        if (player.aspect == Aspects.INK) inkPalletSwap(canvas, player);
+         else   aspectPalletSwap(canvas, player);
         if (player.sbahj) {
             sbahjifier(canvas);
         }
@@ -1997,6 +2023,29 @@ abstract class Drawing {
         swapPalette(canvas, ReferenceColours.SPRITE_PALETTE, p);
     }
 
+    static void inkPalletSwap(CanvasElement canvas, Player player) {
+      int red = ((player.leftHorn ~/ 10) * 29)+16;
+      int blue = ((player.leftHorn.remainder(10)) * 20)+16;
+      int green = (player.rightHorn * 3)+13;
+      int darkred = ((player.leftHorn ~/ 10) * 29)-14;
+      int darkblue = ((player.leftHorn.remainder(10)) * 20)-14;
+      int darkgreen = (player.rightHorn * 3)-17;
+      if (darkred < 16) darkred = 255;
+      if (darkblue < 16) darkblue = 255;
+      if (darkgreen < 16) darkgreen = 255;
+      String inkColor = "#${red.toRadixString(16)}${green.toRadixString(16)}${blue.toRadixString(16)}";
+      String inkColorPants = "#${(red + 23).toRadixString(16)}${(green + 23).toRadixString(16)}${(blue+23).toRadixString(16)}";
+      String inkColorCloak = "#${darkred.toRadixString(16)}${darkgreen.toRadixString(16)}${darkblue.toRadixString(16)}";
+      Palette colors = new AspectPalette()
+            ..shirt_light = inkColor
+            ..accent = inkColor
+            ..cloak_mid = inkColorCloak
+            ..pants_light = inkColorPants;
+        Palette dream = ReferenceColours.Ink_Aspect;
+        Palette ink = new Palette.combined(<Palette>[dream, colors]);
+
+        swapPalette(canvas, ReferenceColours.SPRITE_PALETTE, ink);
+    }
 
     static void candyPalletSwap(CanvasElement canvas, Player player) {
         //not all browsers do png gama info correctly. Chrome does, firefox does not, mostly.

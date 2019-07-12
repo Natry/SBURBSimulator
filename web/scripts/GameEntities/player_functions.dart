@@ -126,7 +126,7 @@ Player randomPlayerNoDerived(Session session, SBURBClass c, Aspect a) {
 
     if (p.isSquidNow == true) {
         p.hair = session.rand.nextIntRange(
-            76, 79);
+            76, 80);
     }
     else {
         p.hair = session.rand.nextIntRange(
@@ -134,7 +134,7 @@ Player randomPlayerNoDerived(Session session, SBURBClass c, Aspect a) {
     } //hair color in decide troll
     p.leftHorn = session.rand.nextIntRange(1, Player.maxHornNumber);
     p.rightHorn = p.leftHorn;
-    if (session.rand.nextDouble() > .7) { //preference for symmetry
+    if (session.rand.nextDouble() > .7 || p.aspect == Aspects.INK) { //preference for symmetry
         p.rightHorn = session.rand.nextIntRange(1, Player.maxHornNumber);
     }
     p.initializeStats();
@@ -170,7 +170,7 @@ Player randomPlayerWithClaspect(Session session, SBURBClass c, Aspect a, [Moon m
 
     if (p.isSquidNow == true) {
         p.hair = session.rand.nextIntRange(
-            76, 79);
+            76, 80);
         if (p.aspect == Aspects.BLOOD) {
             p.aspect = Aspects.INK;
         }
@@ -182,10 +182,10 @@ Player randomPlayerWithClaspect(Session session, SBURBClass c, Aspect a, [Moon m
             p.aspect = Aspects.BLOOD;
         }
        } //hair color in decide troll
-    p.leftHorn = session.rand.nextIntRange(1, 46);
+    p.leftHorn = session.rand.nextIntRange(1, Player.maxHornNumber);
     p.rightHorn = p.leftHorn;
-    if (session.rand.nextDouble() > .7) { //preference for symmetry
-        p.rightHorn = session.rand.nextIntRange(1, 46);
+    if (session.rand.nextDouble() > .7 || p.aspect == Aspects.INK) { //preference for symmetry
+        p.rightHorn = session.rand.nextIntRange(1, Player.maxHornNumber);
     }
 
     return p;

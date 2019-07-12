@@ -744,7 +744,7 @@ class CharacterCreatorHelper {
                 player.isSquidNow = true;
                 if (player.hair == 256 || player.hair < 76) {
                     player.hair = player.rand.nextIntRange(
-                        76, 79);
+                        76, 80);
                 }
                 if (player.aspect == Aspects.BLOOD) {
                     player.aspect = Aspects.INK;
@@ -932,7 +932,7 @@ class CharacterCreatorHelper {
         String html =
             "<select id = 'hairTypeID${player.id}' name='hair${player.id}'>";
         if (player.isSquidNow) {
-            for (int i = 76; i <= 79; i++) {
+            for (int i = 76; i <= 80; i++) {
                 if (player.hair == i) {
                     html +=
                     '<option  selected = "selected" value="$i">$i</option>';

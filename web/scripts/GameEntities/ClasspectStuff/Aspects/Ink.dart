@@ -18,7 +18,7 @@ class Ink extends Aspect {
 
     @override
     AspectPalette palette = new AspectPalette()
-        ..accent = "#993300"
+        ..accent = '#080808'
         ..aspect_light = '#BA1016'
         ..aspect_dark = '#820B0F'
         ..shoe_light = '#381B76'
@@ -62,10 +62,8 @@ class Ink extends Aspect {
     @override
     void initializeItems() {
         items = new WeightedList<Item>()
-        ..add(new Item("Mystical Vial of Blood",<ItemTrait>[ItemTraitFactory.GLASS,ItemTraitFactory.CALMING, ItemTraitFactory.ASPECTAL, ItemTraitFactory.HEALING],shogunDesc: "Vial of Not-ABs Oil"))
-            //shitty fanfic, you'll always be in my blood pusher.
+        ..add(new Item("Inkwell",<ItemTrait>[ItemTraitFactory.GLASS,ItemTraitFactory.CALMING, ItemTraitFactory.ASPECTAL, ItemTraitFactory.FEATHER],shogunDesc: "Vial of Not-ABs Oil"))
             ..add(new Item("Bananaphone",<ItemTrait>[ItemTraitFactory.EDIBLE,ItemTraitFactory.CALMING, ItemTraitFactory.ASPECTAL, ItemTraitFactory.FUNNY], abDesc: "Really? Yet another in-joke nobody will ever get? Good work, 'oh mighty creator'. ",shogunDesc: "Yellow Respect Device"))
-
             ..add(new Item("Friendship Bracelet",<ItemTrait>[ItemTraitFactory.CLOTH,ItemTraitFactory.CALMING, ItemTraitFactory.ASPECTAL, ItemTraitFactory.HEALING, ItemTraitFactory.CHAIN],shogunDesc: "Soul Binding Wrist Shackle"))
         ..add(new Item("Bonding Manacles",<ItemTrait>[ItemTraitFactory.METAL,ItemTraitFactory.RESTRAINING, ItemTraitFactory.ASPECTAL, ItemTraitFactory.HEALING,ItemTraitFactory.CHAIN, ItemTraitFactory.UNCOMFORTABLE],shogunDesc: "Handcuff with one cuff full of cigarettes"))
         ..add(new Item("Friendship Stairs",<ItemTrait>[ItemTraitFactory.WOOD,ItemTraitFactory.IRONICFAKECOOL, ItemTraitFactory.CALMING, ItemTraitFactory.HEALING, ItemTraitFactory.ASPECTAL, ItemTraitFactory.LEGENDARY],shogunDesc: "Bloodstained Stairs",abDesc:"You push your friends down these, dunkass.")); //john wanted to push karkat down these.

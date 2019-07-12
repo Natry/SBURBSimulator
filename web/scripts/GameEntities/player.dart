@@ -1639,10 +1639,11 @@ class Player extends GameEntity{
         }
 
         if (this.session.getSessionType() == "Inkling") {
-          this.hairColor = "#610061";
           this.isSquidNow = true;
           this.hairColor = "#ffffff";
-          return;
+          String squidInk = "#" + this.aspect.palette.accent.toHexString();
+          this.bloodColor = squidInk;
+            return;
         }
 
         if (this.session.getSessionType() == "Troll" || (this.session.getSessionType() == "Mixed" && rand.nextDouble() > 0.5)) {
