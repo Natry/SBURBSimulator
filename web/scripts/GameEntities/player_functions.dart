@@ -137,6 +137,13 @@ Player randomPlayerNoDerived(Session session, SBURBClass c, Aspect a) {
     if (session.rand.nextDouble() > .7 || p.aspect == Aspects.INK) { //preference for symmetry
         p.rightHorn = session.rand.nextIntRange(1, Player.maxHornNumber);
     }
+    if (p.aspect == Aspects.INK) {
+      int red = ((p.leftHorn ~/ 10) * 29)+16;
+      int blue = ((p.leftHorn.remainder(10)) * 20)+16;
+      int green = (p.rightHorn * 3)+13;
+      String inkColor = "#${red.toRadixString(16)}${green.toRadixString(16)}${blue.toRadixString(16)}";
+      p.bloodColor = inkColor;
+    }
     p.initializeStats();
     p.initializeSprite();
 
@@ -186,6 +193,13 @@ Player randomPlayerWithClaspect(Session session, SBURBClass c, Aspect a, [Moon m
     p.rightHorn = p.leftHorn;
     if (session.rand.nextDouble() > .7 || p.aspect == Aspects.INK) { //preference for symmetry
         p.rightHorn = session.rand.nextIntRange(1, Player.maxHornNumber);
+    }
+    if (p.aspect == Aspects.INK) {
+      int red = ((p.leftHorn ~/ 10) * 29)+16;
+      int blue = ((p.leftHorn.remainder(10)) * 20)+16;
+      int green = (p.rightHorn * 3)+13;
+      String inkColor = "#${red.toRadixString(16)}${green.toRadixString(16)}${blue.toRadixString(16)}";
+      p.bloodColor = inkColor;
     }
 
     return p;

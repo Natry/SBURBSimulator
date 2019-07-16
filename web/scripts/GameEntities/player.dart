@@ -13,7 +13,7 @@ import '../includes/lz-string.dart';
 
 class Player extends GameEntity{
     //TODO trollPlayer subclass of player??? (have subclass of relationship)
-    num baby = null;
+    num baby = 1;
     CanvasElement firstStatsCanvas;
     bool canSkaia = false; //unlocked by finishing quests or by quest bed god tiering.
 
@@ -1138,6 +1138,7 @@ class Player extends GameEntity{
         Player guardian = randomPlayerWithClaspect(this.session, this.session.rand.pickFrom(possibilities), this.aspect);
         removeFromArray(guardian.class_name, session.available_classes_guardians);
         guardian.isTroll = player.isTroll;
+        guardian.isSquidNow = player.isSquidNow;
         guardian.quirk.favoriteNumber = player.quirk.favoriteNumber;
         if (guardian.isTroll) {
             guardian.quirk = randomTrollSim(this.session.rand, guardian); //not same quirk as guardian;
@@ -1638,7 +1639,7 @@ class Player extends GameEntity{
             return;
         }
 
-        if (this.session.getSessionType() == "Inkling") {
+        if (this.session.getSessionType() == "Inkling" || (this.session.getSessionType() == "Postapoc" && rand.nextDouble() > 0.5) || (this.session.getSessionType() == "Jumble" && rand.nextDouble() > 0.67)) {
           this.isSquidNow = true;
           this.hairColor = "#ffffff";
           String squidInk = "#" + this.aspect.palette.accent.toHexString();
@@ -1646,7 +1647,7 @@ class Player extends GameEntity{
             return;
         }
 
-        if (this.session.getSessionType() == "Troll" || (this.session.getSessionType() == "Mixed" && rand.nextDouble() > 0.5)) {
+        if (this.session.getSessionType() == "Troll" || (this.session.getSessionType() == "Mixed" && rand.nextDouble() > 0.5) || (this.session.getSessionType() == "Jumble" && rand.nextDouble() > 0.34)) {
             this.isTroll = true;
             this.hairColor = "#000000";
             this.decideHemoCaste();

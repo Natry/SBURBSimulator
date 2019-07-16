@@ -106,6 +106,14 @@ class Blood extends Aspect {
                 new Quest("As the ${Quest.PLAYER1} goes around unplugging each river in turn, they begin to notice more and more debris among the candy red flow. Is ${Quest.DENIZEN} conspiring to reclog the rivers? "),
                 new DenizenFightQuest("It is time for the ${Quest.PLAYER1}  to finally face the ${Quest.DENIZEN}. The rivers are too vital to the ${Quest.CONSORT}s to risk having them reclog.","The ${Quest.DENIZEN} lies slain by the ${Quest.PLAYER1}'s ${Quest.WEAPON}. The ${Quest.PLAYER1} has won! The ${Quest.CONSORT}s have a bustling trade based economy once again.","The tyranny of ${Quest.DENIZEN} continues with the defeat of the ${Quest.PLAYER1}.")
             ], new DenizenReward(), QuestChainFeature.defaultOption), Feature.WAY_LOW)
+
+            ..addFeature(new PreDenizenQuestChain("The True Meaning of Blood", [
+                new Quest("The ${Quest.PLAYER1} is playing against a ${Quest.CONSORT} in a friendly game of ${Quest.PHYSICALMCGUFFIN} Battle. With some smooth moves, they pull out a victory. The ${Quest.CONSORT} comes over for a handshake. The ${Quest.PLAYER1} notices some ink dripping out of the ${Quest.CONSORT}’s arm. The ${Quest.CONSORT} becomes confused. 'Ink? No this is blood from when I scraped my limb.' What the hell is blood?"),
+                new Quest("The ${Quest.PLAYER1} tries asking around what blood is, but every ${Quest.CONSORT} asked just looks at them strangely and walks away. Finally, they run into a ${Quest.DENIZEN} minion who mocks their lack of knowledge. 'If you don’t even know what blood is maybe you should read a book sometime.'"),
+                new Quest("The ${Quest.PLAYER1} takes the rude (and also dead) ${Quest.DENIZEN} minion’s advice and gets their answer at a library. According to a biology textbook, people here have a liquid called blood running through tubes across their entire body. What a completely weird and alien concept.")
+            ], new RandomReward(), QuestChainFeature.playerIsInkling), Feature.WAY_HIGH)
+
+
             ,  Theme.HIGH);
         addTheme(new Theme(<String>["Chains", "Unions", "Manacles", "Bonds", "Weddings", "Rings", "Webs"])
             ..addFeature(FeatureFactory.CLANKINGSOUND, Feature.HIGH)

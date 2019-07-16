@@ -63,7 +63,7 @@ class Ink extends Aspect {
     void initializeItems() {
         items = new WeightedList<Item>()
         ..add(new Item("Inkwell",<ItemTrait>[ItemTraitFactory.GLASS,ItemTraitFactory.CALMING, ItemTraitFactory.ASPECTAL, ItemTraitFactory.FEATHER],shogunDesc: "Vial of Not-ABs Oil"))
-            ..add(new Item("Bananaphone",<ItemTrait>[ItemTraitFactory.EDIBLE,ItemTraitFactory.CALMING, ItemTraitFactory.ASPECTAL, ItemTraitFactory.FUNNY], abDesc: "Really? Yet another in-joke nobody will ever get? Good work, 'oh mighty creator'. ",shogunDesc: "Yellow Respect Device"))
+            ..add(new Item("Splatfest T-shirt",<ItemTrait>[ItemTraitFactory.CLOTH,ItemTraitFactory.COMFORTABLE, ItemTraitFactory.ASPECTAL, ItemTraitFactory.FASHIONABLE],shogunDesc: "Mechandising Party"))
             ..add(new Item("Friendship Bracelet",<ItemTrait>[ItemTraitFactory.CLOTH,ItemTraitFactory.CALMING, ItemTraitFactory.ASPECTAL, ItemTraitFactory.HEALING, ItemTraitFactory.CHAIN],shogunDesc: "Soul Binding Wrist Shackle"))
         ..add(new Item("Bonding Manacles",<ItemTrait>[ItemTraitFactory.METAL,ItemTraitFactory.RESTRAINING, ItemTraitFactory.ASPECTAL, ItemTraitFactory.HEALING,ItemTraitFactory.CHAIN, ItemTraitFactory.UNCOMFORTABLE],shogunDesc: "Handcuff with one cuff full of cigarettes"))
         ..add(new Item("Friendship Stairs",<ItemTrait>[ItemTraitFactory.WOOD,ItemTraitFactory.IRONICFAKECOOL, ItemTraitFactory.CALMING, ItemTraitFactory.HEALING, ItemTraitFactory.ASPECTAL, ItemTraitFactory.LEGENDARY],shogunDesc: "Bloodstained Stairs",abDesc:"You push your friends down these, dunkass.")); //john wanted to push karkat down these.
@@ -93,6 +93,7 @@ class Ink extends Aspect {
             ..addFeature(FeatureFactory.CALMFEELING, Feature.LOW)
             ..addFeature(FeatureFactory.SPIDERCONSORT, Feature.HIGH)
             ..addFeature(FeatureFactory.SWEETSMELL, Feature.LOW)
+            ..addFeature(FeatureFactory.JELLYFISHCONSORT, Feature.HIGH)
 
             ..addFeature(new DenizenQuestChain("Learn the Power of Teamwork", [
                 new Quest("The ${Quest.PLAYER1}  and the ${Quest.PLAYER2} are investigating a dungeon. Suddenly, a chain snaps out of nowhere and handcuffs them together. After some initial bickering, they learn the POWER OF TEAMWORK and complete the dungeon. "),
@@ -154,6 +155,13 @@ class Ink extends Aspect {
                 new Quest("The ${Quest.PLAYER1} heads back to the town, but they hear loud screaming. They rush towards the center of town and find their culprit, themself. Or rather something in the shape of the ${Quest.PLAYER1} with an otherworldly transparent color. The ${Quest.PLAYER1} soundly defeats the doppelganger in a quick strife. ${Quest.CONSORT}s witness the smackdown and cheer. The ${Quest.PLAYER1}’s name has been cleared!"),
                 new DenizenFightQuest("The ${Quest.PLAYER1} realizes that the doppelganger was created by ${Quest.DENIZEN} and more could be created if unstopped. The${Quest.PLAYER1} tracks ${Quest.DENIZEN}’s lair down by following the path of vandalism created by their doppelganger. It’s time to take ${Quest.DENIZEN} down for framing the ${Quest.PLAYER1}.","${Quest.DENIZEN} is defeated and doppelganger production has been stopped. The ${Quest.CONSORT}s apologize for mistaking the ${Quest.PLAYER1} for the real vandal.","${Quest.DENIZEN} begins making more doppelgangers to tarnish the ${Quest.PLAYER1}’s good name.")
             ], new DenizenReward(), QuestChainFeature.playerIsDestructiveClass), Feature.MEDIUM)
+
+            ..addFeature(new DenizenQuestChain("An Inky Situation", [
+                new Quest("The ${Quest.PLAYER1} is playing against a ${Quest.CONSORT} in a friendly game of ${Quest.PHYSICALMCGUFFIN} Battle. With some smooth moves, they pull out a victory. The ${Quest.CONSORT} comes over for a handshake. The ${Quest.PLAYER1} reaches out what would be their hand, if it wasn’t currently a melting stump. The ${Quest.PLAYER1} screams in horror, but their hand instantly reforms. What the hell was that about?"),
+                new Quest("The entrance to ${Quest.DENIZEN}’s lair is blocked by huge metal bars, with no apparent mechanisms to open it. The ${Quest.PLAYER1} walks around the lair looking for another way in, but suddenly everything starts growing! No wait, it’s actually just the ${Quest.PLAYER1} slowly dissolving into a puddle. Again?! The dissolving process is once again reversed after a bunch of screaming."),
+                new Quest("The ${Quest.PLAYER1} makes their way to a secluded hut. A wizened ${Quest.CONSORT} hermit sits in a meditative pose. The ${Quest.PLAYER1} says they were told that he could explain what was happening to the ${Quest.PLAYER1}. The ${Quest.CONSORT} nods and tells the ${Quest.PLAYER1} that their aspect was meant for a race of squid-like creatures with the power to turn into ink. Having the aspect means they are partially a squid now and are saddled with the same ability. The ${Quest.PLAYER1} will have to learn to control their new power if they wish to succeed in the session."),
+                new DenizenFightQuest("After some time practicing the ${Quest.PLAYER1} has gotten the hang of their strange ability and returns to ${Quest.DENIZEN}’s lair. They proceed to melt into a squid-like form make of ink and effortlessly slide through the bars. Jeez that feels weird. ${Quest.DENIZEN} has been very impatient waiting for the ${Quest.PLAYER1} and immediately starts the strife!","The ${Quest.PLAYER1} raises a hand in victory, and then has to shake said hand to stop it from turning to ink again. It sure is annoying being a squid now.","With a great blow, the ${Quest.PLAYER1} is slammed into a wall hard and turns into a puddle with eyes, before reforming. This would be funny if the ${Quest.PLAYER1} hasn’t possibly died from the impact.")
+            ], new DenizenReward(), QuestChainFeature.playerIsNotInkling), Feature.WAY_HIGH)
 
             , Theme.HIGH);
 

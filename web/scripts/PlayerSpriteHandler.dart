@@ -116,9 +116,11 @@ class PlayerSpriteHandler {
             PaletteSwapCallback callback = Drawing.aspectPalletSwap;
             if (player.trickster) callback = Drawing.candyPalletSwap;
             if (player.robot) callback = Drawing.robotPalletSwap;
+            if (player.aspect == Aspects.INK) callback = Drawing.inkPalletSwap;
             await drawWhateverFutureWithPalleteSwapCallback(canvas, Drawing.playerToCowl(player), player, callback);
         }
 
+        if (player.aspect == Aspects.INK) Drawing.inkPalletSwap(canvas,player);
         if (player.robot == true) {
             Drawing.roboSkin(canvas); //, player);
         } else if (player.trickster == true) {
@@ -209,7 +211,7 @@ class PlayerSpriteHandler {
         if (player.sbahj) {
             Drawing.sbahjifier(canvas);
         }
-        if (player.isTroll) {
+        if (player.isTroll || player.aspect == Aspects.INK) {
             Drawing.swapColors(canvas, ReferenceColours.HAIR, new Colour.fromStyleString(player.hairColor));
             Drawing.swapColors(canvas, ReferenceColours.HAIR_ACCESSORY, new Colour.fromStyleString(player.bloodColor));
         } else {
@@ -286,7 +288,7 @@ class PlayerSpriteHandler {
         if (player.sbahj) {
             Drawing.sbahjifier(canvas);
         }
-        if (player.isTroll) {
+        if (player.isTroll || player.aspect == Aspects.INK) {
             Drawing.swapColors(canvas, ReferenceColours.HAIR, new Colour.fromStyleString(player.hairColor));
             Drawing.swapColors(canvas, ReferenceColours.HAIR_ACCESSORY, new Colour.fromStyleString(player.bloodColor));
         } else {
@@ -379,7 +381,8 @@ class PlayerSpriteHandler {
         if (player.sbahj) {
             Drawing.sbahjifier(canvas);
         }
-        Drawing.aspectPalletSwap(canvas, player);
+        if (player.aspect == Aspects.INK) Drawing.inkPalletSwap(canvas, player);
+        else Drawing.aspectPalletSwap(canvas, player);
         //aspectSymbol(canvas, player);
     }
 
@@ -398,7 +401,8 @@ class PlayerSpriteHandler {
         if (bardQuest && player.class_name == SBURBClassManager.BARD) {
            await drawWhateverFuture(canvas, "/Bodies/cod.png");
         }
-        Drawing.aspectPalletSwap(canvas, player);
+        if (player.aspect == Aspects.INK) Drawing.inkPalletSwap(canvas, player);
+        else Drawing.aspectPalletSwap(canvas, player);
         if (player.sbahj) {
             Drawing.sbahjifier(canvas);
         }

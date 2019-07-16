@@ -1919,19 +1919,6 @@ abstract class Drawing {
         //aspectSymbol(canvas, player);
     }
 
-    static void inkSprite(CanvasElement canvas, Player player) {
-        String imageString = playerToRegularBody(player);
-        CanvasRenderingContext2D ctx = canvas.getContext('2d');
-        addImageTag(imageString);
-        ImageElement img = imageSelector(imageString);
-        ctx.drawImage(img, 0, 0);
-        if (player.sbahj) {
-            sbahjifier(canvas);
-        }
-        inkPalletSwap(canvas, player);
-        //aspectSymbol(canvas, player);
-    }
-
     static void dreamSprite(CanvasElement canvas, Player player) {
         String imageString = playerToDreamBody(player);
         addImageTag(imageString);

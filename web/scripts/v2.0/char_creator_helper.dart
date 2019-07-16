@@ -683,6 +683,13 @@ class CharacterCreatorHelper {
         a2.onChange.listen((Event e) {
             OptionElement aspectDropDown = a2.selectedOptions[0];
             player.aspect = Aspects.stringToAspect(aspectDropDown.value);
+            if (player.aspect == Aspects.INK && player.isSquidNow == true) {
+              int red = ((player.leftHorn ~/ 10) * 29)+16;
+              int blue = ((player.leftHorn.remainder(10)) * 20)+16;
+              int green = (player.rightHorn * 3)+13;
+              String inkColor = "#${red.toRadixString(16)}${green.toRadixString(16)}${blue.toRadixString(16)}";
+              player.bloodColor = inkColor;
+            }
             that.redrawSinglePlayer(player);
             helpText.setInnerHtml(that.generateHelpText("Aspect", player.aspect.name));
         });
@@ -745,9 +752,18 @@ class CharacterCreatorHelper {
                 if (player.hair == 256 || player.hair < 76) {
                     player.hair = player.rand.nextIntRange(
                         76, 80);
+                    String squidInk = "#${player.aspect.palette.accent.toHexString()}";
+                    player.bloodColor = squidInk;
                 }
                 if (player.aspect == Aspects.BLOOD) {
                     player.aspect = Aspects.INK;
+                }
+                if (player.aspect == Aspects.INK) {
+                  int red = ((player.leftHorn ~/ 10) * 29)+16;
+                  int blue = ((player.leftHorn.remainder(10)) * 20)+16;
+                  int green = (player.rightHorn * 3)+13;
+                  String inkColor = "#${red.toRadixString(16)}${green.toRadixString(16)}${blue.toRadixString(16)}";
+                  player.bloodColor = inkColor;
                 }
                 }
              else {
