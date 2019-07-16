@@ -227,6 +227,16 @@ class QuestChainFeature extends Feature {
         return p.aspect == Aspects.DOOM || p.aspect == Aspects.TIME;
     }
 
+    static bool playerIsInkling(List<GameEntity> ps) {
+        Player p = ps.first as Player;
+        return p.isSquidNow;
+    }
+
+    static bool playerIsNotInkling(List<GameEntity> ps) {
+        Player p = ps.first as Player;
+        return (p.isSquidNow == false);
+    }
+
     //make quest chains be a weighted list so default option is ALWAYS very unlikely to trigger. or something.
     static bool defaultOption(List<GameEntity> ps) {
         return true;

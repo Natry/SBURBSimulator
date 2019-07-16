@@ -11,7 +11,7 @@ class Technology extends InterestCategory {
     List<String> handles1 = <String>["kludge", "pixel", "machinist", "programming", "mechanical", "kilo", "robotic", "silicon", "techno", "hardware", "battery", "python", "windows", "serial", "statistical"];
 
     @override
-    List<String> handles2 = <String>["Roboticist", "Hacker", "Haxor", "Technologist", "Robot", "Machine", "Machinist", "Droid", "Binary", "Breaker", "Vaporware", "Lag", "Laptop", "Spaceman", "Runner", "L33T", "Data"];
+    List<String> handles2 = <String>["Roboticist", "Hacker", "Haxor", "Technologist", "Robot", "Machine", "Machinist", "Droid", "Binary", "Breaker", "Vaporware", "Lag", "Laptop", "Spaceman", "Runner", "L33T", "Data","Incinerator"];
 
     @override
     List<String> levels = <String>["HURRYWORTH HACKER", "CLANKER CURMUDGEON"];

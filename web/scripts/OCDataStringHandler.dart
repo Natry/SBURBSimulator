@@ -385,7 +385,18 @@ dynamic dataBytesAndStringsToPlayer(Session session, String charString, List<Str
   player.leftHorn = charString.codeUnitAt(8);
   player.rightHorn = charString.codeUnitAt(9);
   player.hair = charString.codeUnitAt(10);
-
-  ;
+  if(player.hair >=76 && player.hair <= 250) {
+    player.isSquidNow = true;
+    String squidInk = "#${player.aspect.palette.accent.toHexString()}";
+    player.bloodColor = squidInk;
+    if (player.aspect == Aspects.INK) {
+      int red = ((player.leftHorn ~/ 10) * 29)+16;
+      int blue = ((player.leftHorn.remainder(10)) * 20)+16;
+      int green = (player.rightHorn * 3)+13;
+      String inkColor = "#${red.toRadixString(16)}${green.toRadixString(16)}${blue.toRadixString(16)}";
+      player.bloodColor = inkColor;
+    }
+    player.victimBlood = null;
+  }
   return player;
 }

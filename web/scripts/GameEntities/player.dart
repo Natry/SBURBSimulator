@@ -13,7 +13,7 @@ import '../includes/lz-string.dart';
 
 class Player extends GameEntity{
     //TODO trollPlayer subclass of player??? (have subclass of relationship)
-    num baby = null;
+    num baby = 1;
     CanvasElement firstStatsCanvas;
     bool canSkaia = false; //unlocked by finishing quests or by quest bed god tiering.
 
@@ -66,6 +66,7 @@ class Player extends GameEntity{
     String hairColor = null;
     bool dreamSelf = true;
     bool isTroll = false; //later
+    bool isSquidNow = false;
     String bloodColor = "#ff0000"; //human red.
     num leftHorn = null;
     num rightHorn = null;
@@ -1137,6 +1138,7 @@ class Player extends GameEntity{
         Player guardian = randomPlayerWithClaspect(this.session, this.session.rand.pickFrom(possibilities), this.aspect);
         removeFromArray(guardian.class_name, session.available_classes_guardians);
         guardian.isTroll = player.isTroll;
+        guardian.isSquidNow = player.isSquidNow;
         guardian.quirk.favoriteNumber = player.quirk.favoriteNumber;
         if (guardian.isTroll) {
             guardian.quirk = randomTrollSim(this.session.rand, guardian); //not same quirk as guardian;
@@ -1637,7 +1639,15 @@ class Player extends GameEntity{
             return;
         }
 
-        if (this.session.getSessionType() == "Troll" || (this.session.getSessionType() == "Mixed" && rand.nextDouble() > 0.5)) {
+        if (this.session.getSessionType() == "Inkling" || (this.session.getSessionType() == "Postapoc" && rand.nextDouble() > 0.5) || (this.session.getSessionType() == "Jumble" && rand.nextDouble() > 0.67)) {
+          this.isSquidNow = true;
+          this.hairColor = "#ffffff";
+          String squidInk = "#" + this.aspect.palette.accent.toHexString();
+          this.bloodColor = squidInk;
+            return;
+        }
+
+        if (this.session.getSessionType() == "Troll" || (this.session.getSessionType() == "Mixed" && rand.nextDouble() > 0.5) || (this.session.getSessionType() == "Jumble" && rand.nextDouble() > 0.34)) {
             this.isTroll = true;
             this.hairColor = "#000000";
             this.decideHemoCaste();
@@ -1917,7 +1927,7 @@ class Player extends GameEntity{
         this.rightHorn = replayPlayer.rightHorn;
         this.interest1 = replayPlayer.interest1;
         this.interest2 = replayPlayer.interest2;
-
+        this.isSquidNow = replayPlayer.isSquidNow;
         this.causeOfDrain = replayPlayer.causeOfDrain;
         this.causeOfDeath = replayPlayer.causeOfDeath;
         //print("TEST CUSTOM: replay player's chat handle is ${replayPlayer.chatHandle}");
@@ -2307,6 +2317,7 @@ class Player extends GameEntity{
         ret.interest2 = player.interest2;
         ret.stats = player;
         ret.dreamPalette = player.dreamPalette;
+        ret.isSquidNow = player.isSquidNow;
         //;
         if(saveCanvas && player.canvas != null) {
             ret.canvas = player.canvas; //you're just for rendering

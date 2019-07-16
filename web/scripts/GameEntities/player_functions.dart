@@ -124,12 +124,25 @@ Player randomPlayerNoDerived(Session session, SBURBClass c, Aspect a) {
     p.baby = session.rand.nextIntRange(1, 3);
 
 
-    p.hair = session.rand.nextIntRange(1, Player.maxHairNumber);
-    //hair color in decideTroll.
+    if (p.isSquidNow == true) {
+        p.hair = session.rand.nextIntRange(
+            76, 80);
+    }
+    else {
+        p.hair = session.rand.nextIntRange(
+            1, Player.maxHairNumber);
+    } //hair color in decide troll
     p.leftHorn = session.rand.nextIntRange(1, Player.maxHornNumber);
     p.rightHorn = p.leftHorn;
-    if (session.rand.nextDouble() > .7) { //preference for symmetry
+    if (session.rand.nextDouble() > .7 || p.aspect == Aspects.INK) { //preference for symmetry
         p.rightHorn = session.rand.nextIntRange(1, Player.maxHornNumber);
+    }
+    if (p.aspect == Aspects.INK) {
+      int red = ((p.leftHorn ~/ 10) * 29)+16;
+      int blue = ((p.leftHorn.remainder(10)) * 20)+16;
+      int green = (p.rightHorn * 3)+13;
+      String inkColor = "#${red.toRadixString(16)}${green.toRadixString(16)}${blue.toRadixString(16)}";
+      p.bloodColor = inkColor;
     }
     p.initializeStats();
     p.initializeSprite();
@@ -162,11 +175,31 @@ Player randomPlayerWithClaspect(Session session, SBURBClass c, Aspect a, [Moon m
     //no longer any randomness directly in player class. don't want to eat seeds if i don't have to.
     p.baby = session.rand.nextIntRange(1, 3);
 
-    p.hair = session.rand.nextIntRange(1, Player.maxHairNumber); //hair color in decide troll
-    p.leftHorn = session.rand.nextIntRange(1, 46);
+    if (p.isSquidNow == true) {
+        p.hair = session.rand.nextIntRange(
+            76, 80);
+        if (p.aspect == Aspects.BLOOD) {
+            p.aspect = Aspects.INK;
+        }
+    }
+       else {
+        p.hair = session.rand.nextIntRange(
+            1, Player.maxHairNumber);
+        if (p.aspect == Aspects.INK) {
+            p.aspect = Aspects.BLOOD;
+        }
+       } //hair color in decide troll
+    p.leftHorn = session.rand.nextIntRange(1, Player.maxHornNumber);
     p.rightHorn = p.leftHorn;
-    if (session.rand.nextDouble() > .7) { //preference for symmetry
-        p.rightHorn = session.rand.nextIntRange(1, 46);
+    if (session.rand.nextDouble() > .7 || p.aspect == Aspects.INK) { //preference for symmetry
+        p.rightHorn = session.rand.nextIntRange(1, Player.maxHornNumber);
+    }
+    if (p.aspect == Aspects.INK) {
+      int red = ((p.leftHorn ~/ 10) * 29)+16;
+      int blue = ((p.leftHorn.remainder(10)) * 20)+16;
+      int green = (p.rightHorn * 3)+13;
+      String inkColor = "#${red.toRadixString(16)}${green.toRadixString(16)}${blue.toRadixString(16)}";
+      p.bloodColor = inkColor;
     }
 
     return p;

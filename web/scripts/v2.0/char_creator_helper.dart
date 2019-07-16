@@ -132,6 +132,7 @@ class CharacterCreatorHelper {
         (player.hairColor);
         String troll = "Human";
         if (player.isTroll) troll = "Troll";
+        if (player.isSquidNow) troll = "Inkling";
         (querySelector("#speciesID${player.id}") as SelectElement).value = (troll);
         (querySelector("#leftHornID${player.id}") as SelectElement).value =
         (player.leftHorn.toString());
@@ -682,6 +683,13 @@ class CharacterCreatorHelper {
         a2.onChange.listen((Event e) {
             OptionElement aspectDropDown = a2.selectedOptions[0];
             player.aspect = Aspects.stringToAspect(aspectDropDown.value);
+            if (player.aspect == Aspects.INK && player.isSquidNow == true) {
+              int red = ((player.leftHorn ~/ 10) * 29)+16;
+              int blue = ((player.leftHorn.remainder(10)) * 20)+16;
+              int green = (player.rightHorn * 3)+13;
+              String inkColor = "#${red.toRadixString(16)}${green.toRadixString(16)}${blue.toRadixString(16)}";
+              player.bloodColor = inkColor;
+            }
             that.redrawSinglePlayer(player);
             helpText.setInnerHtml(that.generateHelpText("Aspect", player.aspect.name));
         });
@@ -730,8 +738,44 @@ class CharacterCreatorHelper {
             String str = aspectDropDown.value;
             if (str == "Troll") {
                 player.isTroll = true;
-            } else {
+                player.isSquidNow = false;
+                if (player.hair != 256 || player.hair >= 76) {
+                    player.hair = player.rand.nextIntRange(
+                        1, Player.maxHairNumber);
+                }
+                if (player.aspect == Aspects.INK) {
+                    player.aspect = Aspects.BLOOD;
+                }
+            } else if (str == "Inkling") {
                 player.isTroll = false;
+                player.isSquidNow = true;
+                if (player.hair == 256 || player.hair < 76) {
+                    player.hair = player.rand.nextIntRange(
+                        76, 80);
+                    String squidInk = "#${player.aspect.palette.accent.toHexString()}";
+                    player.bloodColor = squidInk;
+                }
+                if (player.aspect == Aspects.BLOOD) {
+                    player.aspect = Aspects.INK;
+                }
+                if (player.aspect == Aspects.INK) {
+                  int red = ((player.leftHorn ~/ 10) * 29)+16;
+                  int blue = ((player.leftHorn.remainder(10)) * 20)+16;
+                  int green = (player.rightHorn * 3)+13;
+                  String inkColor = "#${red.toRadixString(16)}${green.toRadixString(16)}${blue.toRadixString(16)}";
+                  player.bloodColor = inkColor;
+                }
+                }
+             else {
+                player.isTroll = false;
+                player.isSquidNow = false;
+                if (player.hair != 256 || player.hair >= 76) {
+                    player.hair = player.rand.nextIntRange(
+                        1, Player.maxHairNumber);
+                }
+                if (player.aspect == Aspects.INK) {
+                    player.aspect = Aspects.BLOOD;
+                }
             }
             that.redrawSinglePlayer(player);
             helpText.setInnerHtml(that.generateHelpText("Species", player.isTroll ? "Troll" : "Human"));
@@ -903,11 +947,24 @@ class CharacterCreatorHelper {
     String drawOneHairDropDown(Player player) {
         String html =
             "<select id = 'hairTypeID${player.id}' name='hair${player.id}'>";
-        for (int i = 1; i <= Player.maxHairNumber; i++) {
-            if (player.hair == i) {
-                html += '<option  selected = "selected" value="$i">$i</option>';
-            } else {
-                html += '<option value="$i">$i</option>';
+        if (player.isSquidNow) {
+            for (int i = 76; i <= 80; i++) {
+                if (player.hair == i) {
+                    html +=
+                    '<option  selected = "selected" value="$i">$i</option>';
+                } else {
+                    html += '<option value="$i">$i</option>';
+                }
+            }
+        }
+        else {
+            for (int i = 1; i <= Player.maxHairNumber; i++) {
+                if (player.hair == i) {
+                    html +=
+                    '<option  selected = "selected" value="$i">$i</option>';
+                } else {
+                    html += '<option value="$i">$i</option>';
+                }
             }
         }
         html += '</select>';
@@ -1077,12 +1134,13 @@ class CharacterCreatorHelper {
     }
 
     dynamic drawOneSpeciesDropDown(Player player) {
-        var species = ["Human", "Troll"];
+        var species = ["Human", "Troll","Inkling"];
         String html =
             "<select id = 'speciesID${player.id}' name='species${player.id}'>";
         for (int i = 0; i < species.length; i++) {
-            if ((species[i] == "Troll" && player.isTroll) ||
-                (species[i] == "Human" && !player.isTroll)) {
+            if ((species[i] == "Troll" && player.isTroll && !player.isSquidNow) ||
+                (species[i] == "Human" && !player.isTroll && !player.isSquidNow) ||
+                (species[i] == "Inkling" && player.isSquidNow && !player.isTroll)) {
                 html += '<option  selected = "species" value="' +
                     species[i] +
                     '">' +

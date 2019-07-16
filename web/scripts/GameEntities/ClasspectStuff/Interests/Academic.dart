@@ -12,7 +12,7 @@ class Academic extends InterestCategory {
     List<String> handles1 = <String>["serious", "researching", "machiavellian", "princeton", "pedagogical", "theoretical", "hypothetical", "meandering", "scholarly", "biological", "pants", "spectacled", "scientist", "scholastic", "scientific", "particular", "measured"];
 
     @override
-    List<String> handles2 = <String>["Business", "Stuck", "Student", "Scholar", "Researcher", "Scientist", "Trainee", "Biologist", "Minerologist", "Lecturer", "Herbalist", "Dean", "Director", "Honcho", "Minder", "Verbalist", "Botanist"];
+    List<String> handles2 = <String>["Business", "Stuck", "Student", "Scholar", "Researcher", "Scientist", "Trainee", "Biologist", "Minerologist", "Lecturer", "Herbalist", "Dean", "Director", "Honcho", "Minder", "Verbalist", "Botanist","Ichthyologist","Instructor"];
 
     @override
     List<String> levels = <String>["NERDY NOODLER", "SCAMPERING SCIENTIST"];

@@ -12,7 +12,7 @@ class Romantic extends InterestCategory {
     List<String> handles1 = <String>["wishful", "matchmaking", "passionate", "kinky", "romantic", "serendipitous", "true", "hearts", "blushing", "precious", "warm", "serenading", "mesmerizing", "mirrored", "pairing", "perverse"];
 
     @override
-    List<String> handles2 =<String>["Romantic", "Dreamer", "Beau", "Hearthrob", "Virtue", "Beauty", "Rainbow", "Heart", "Magnet", "Miracle", "Serendipity", "Team"];
+    List<String> handles2 =<String>["Romantic", "Dreamer", "Beau", "Hearthrob", "Virtue", "Beauty", "Rainbow", "Heart", "Magnet", "Miracle", "Serendipity", "Team","Idealist"];
 
     @override
     List<String> levels = <String>["QUESTING CUPID", "ROMANCE EXPERT"];
