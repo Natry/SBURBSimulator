@@ -457,6 +457,8 @@ class CharacterCreatorHelper {
             return "Life players are associated with high HP and good MANGRIT. They are capable of using the dead as a resource, but have trouble with Alchemy.";
         if (specific == "Blood")
             return "Blood players are associated with high positive relationships, as well as sanity. They are not very lucky. A Blood player is very difficult to murder, being able to insta-calm rampaging players in most cases. They are also in charge of concillitory shipping grids.";
+        if (specific == "Ink")
+            return "An Inkling exclusive aspect, colors are determined by the horn number. Ink players are associated with high positive relationships, as well as mobility. They are not very lucky. An Ink player is very difficult to murder, being able to insta-calm rampaging players in most cases. They are also in charge of concillitory shipping grids.";
         return "Aspect help text not found for " + specific + ".";
     }
 
@@ -712,6 +714,13 @@ class CharacterCreatorHelper {
         leftHornDiv.onChange.listen((Event e) {
             OptionElement aspectDropDown = leftHornDiv.selectedOptions[0];
             player.leftHorn = int.parse(aspectDropDown.value);
+            if (player.aspect == Aspects.INK && player.isSquidNow == true) {
+                int red = ((player.leftHorn ~/ 10) * 29)+16;
+                int blue = ((player.leftHorn.remainder(10)) * 20)+16;
+                int green = (player.rightHorn * 3)+13;
+                String inkColor = "#${red.toRadixString(16)}${green.toRadixString(16)}${blue.toRadixString(16)}";
+                player.bloodColor = inkColor;
+            }
             that.redrawSinglePlayer(player);
             helpText.setInnerHtml(that.generateHelpText("Horns", player.class_name.name));
         });
@@ -719,6 +728,13 @@ class CharacterCreatorHelper {
         rightHornDiv.onChange.listen((Event e) {
             OptionElement aspectDropDown = rightHornDiv.selectedOptions[0];
             player.rightHorn = int.parse(aspectDropDown.value);
+            if (player.aspect == Aspects.INK && player.isSquidNow == true) {
+                int red = ((player.leftHorn ~/ 10) * 29)+16;
+                int blue = ((player.leftHorn.remainder(10)) * 20)+16;
+                int green = (player.rightHorn * 3)+13;
+                String inkColor = "#${red.toRadixString(16)}${green.toRadixString(16)}${blue.toRadixString(16)}";
+                player.bloodColor = inkColor;
+            }
             that.redrawSinglePlayer(player);
             helpText.setInnerHtml(that.generateHelpText("Horns", player.class_name.name));
         });
@@ -740,17 +756,18 @@ class CharacterCreatorHelper {
                 player.isTroll = true;
                 player.isSquidNow = false;
                 if (player.hair != 256 || player.hair >= 76) {
-                    player.hair = player.rand.nextIntRange(
+                    player.hair = player.session.rand.nextIntRange(
                         1, Player.maxHairNumber);
                 }
                 if (player.aspect == Aspects.INK) {
                     player.aspect = Aspects.BLOOD;
                 }
+            player.bloodColor = player.session.rand.pickFrom(bloodColors);
             } else if (str == "Inkling") {
                 player.isTroll = false;
                 player.isSquidNow = true;
                 if (player.hair == 256 || player.hair < 76) {
-                    player.hair = player.rand.nextIntRange(
+                    player.hair = player.session.rand.nextIntRange(
                         76, 80);
                     String squidInk = "#${player.aspect.palette.accent.toHexString()}";
                     player.bloodColor = squidInk;
@@ -770,12 +787,13 @@ class CharacterCreatorHelper {
                 player.isTroll = false;
                 player.isSquidNow = false;
                 if (player.hair != 256 || player.hair >= 76) {
-                    player.hair = player.rand.nextIntRange(
+                    player.hair = player.session.rand.nextIntRange(
                         1, Player.maxHairNumber);
                 }
                 if (player.aspect == Aspects.INK) {
                     player.aspect = Aspects.BLOOD;
                 }
+                player.bloodColor = "#ff0000";
             }
             that.redrawSinglePlayer(player);
             helpText.setInnerHtml(that.generateHelpText("Species", player.isTroll ? "Troll" : "Human"));
