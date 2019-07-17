@@ -25,7 +25,7 @@ class ChangeLogMemo {
     static Wrangler tableGuardian;
     static Wrangler shogun;
     static Wrangler insufferableOracle;
-
+    static Wrangler Natry;
 
 
 
@@ -62,7 +62,7 @@ class ChangeLogMemo {
         tableGuardian = new Wrangler("tableGuardian", "images/Credits/tg_icon$end", new Colour.fromStyleString("#ff3399"));
 
         dilletantMathematician = new Wrangler("dilletantMathematician", "images/Credits/dm_icon$end", new Colour.fromStyleString("#ff0000"));
-
+        shogun = new Wrangler("Natry", "images/Credits/Natry_icon$end", new Colour.fromStyleString("#00ff00"));
     }
 
     List<MemoNewspost> newsposts = new List<MemoNewspost>();

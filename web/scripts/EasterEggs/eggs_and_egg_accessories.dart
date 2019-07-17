@@ -283,12 +283,17 @@ void setAllAspectsTo(Session session,String a){
 	for(num i = 0; i<session.players.length; i++){
 		if(session.players[i].aspect != Aspects.TIME && session.players[i].aspect != Aspects.SPACE ) session.players[i].aspect = aspect; //You can have no space/time in your own sessions, but AB will never do it on purpose.
 		if(session.players[i].guardian.aspect != Aspects.TIME && session.players[i].guardian.aspect != Aspects.SPACE ) session.players[i].guardian.aspect = aspect;
-		if(session.players[i].aspect == Aspects.INK && session.players[i].isSquidNow == true) {
-			int red = ((session.players[i].leftHorn ~/ 10) * 29)+16;
-			int blue = ((session.players[i].leftHorn.remainder(10)) * 20)+16;
-			int green = (session.players[i].rightHorn * 3)+13;
-			String inkColor = "#${red.toRadixString(16)}${green.toRadixString(16)}${blue.toRadixString(16)}";
-			session.players[i].bloodColor = inkColor;
+		if(session.players[i].aspect == Aspects.INK) {
+			session.players[i].rightHorn = session.rand.nextIntRange(1, Player.maxHornNumber);
+			session.players[i].leftHorn = session.rand.nextIntRange(1, Player.maxHornNumber);
+			if (session.players[i].isSquidNow == true) {
+				int red = ((session.players[i].leftHorn ~/ 10) * 29) + 16;
+				int blue = ((session.players[i].leftHorn.remainder(10)) * 20) + 16;
+				int green = (session.players[i].rightHorn * 3) + 13;
+				String inkColor = "#${red.toRadixString(16)}${green.toRadixString(
+						16)}${blue.toRadixString(16)}";
+				session.players[i].bloodColor = inkColor;
+			}
 		}
 	}
 }
