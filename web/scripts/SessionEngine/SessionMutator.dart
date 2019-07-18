@@ -20,6 +20,7 @@ class SessionMutator {
     bool timeField = false; //means time player will be replacing their past self. basically 100% of time's effect.
     bool spaceField = false; //exclusively controls combo endings .
     bool dreamField = false; //alchemy doesn't consume items, alchemy can happen as many times as you want.
+    bool inkField = false; //lets pale conversations happen no matter the quadrant. let's non-heroes join, too. and interaction effects.
 
     @override
     String toString() {
@@ -37,6 +38,7 @@ class SessionMutator {
         if(timeField) ret = "$ret time";
         if(spaceField) ret = "$ret space";
         if(dreamField) ret = "$ret dream";
+        if(inkField) ret = "$ret ink";
 
         return ret;
     }
@@ -208,6 +210,77 @@ class SessionMutator {
             ret = "$ret The ${activatingPlayer} also gives an inspiring speech that convinces the ${turnArrayIntoHumanSentence(activatingPlayer.session.activatedNPCS)} to help them out.";
             for(GameEntity g in activatingPlayer.session.activatedNPCS) {
                 activatingPlayer.session.logger.debug("adding companion $g to blood player $activatingPlayer");
+                activatingPlayer.addCompanion(g);
+            }
+        }
+
+        return ret;
+    }
+
+    String ink(Session s, Player activatingPlayer) {
+        s.logger.info("AB: Huh. Looks like a ${activatingPlayer.title()} is going at it.");
+        effectsInPlay ++;
+        inkField = true;
+        String ret = "";
+        if(activatingPlayer.session.players.length < 20) {
+            ret = "The ${activatingPlayer.htmlTitle()} begins to glow amid a field of code the color of old and fresh ink. ";
+            ret += "Skaia decided they couldn't save everyone. That only SOME of their friends were destined to play the game. ";
+            ret += " They reject this rule entirely. They find a place in the code where more players exist, but aren't active yet, ";
+            ret += " And change things until they are classified as active.  They collaborate with the time player as needed, but they get the ";
+            ret += " copies of the game to their other friends before it's too late. Their friends join. They seem....wrong.  Like Skaia isn't extending them whatever rights real Player have. ";
+            ret += "Still. It's better than being dead. The ${activatingPlayer.htmlTitle()} sets up various ways to keep people cooperating and sane while they are at it. ";
+
+        }else {
+            ret = "The ${activatingPlayer.htmlTitle()} begins to glow amid a field of code the color of old and fresh ink. ";
+            ret += "Skaia decided they couldn't save everyone. That only SOME of their friends were destined to play the game. ";
+            ret += " They try to reject this rule entirely, but JR says that that's too many fucking players and AB is getting sad. They fail to bring new players into the session. ";
+
+        }
+        //the ink player tries to save their friends who WERN'T destined to play this game.
+        //TODO rewrite guardian code so classes are a remix of players, not random and repeatable
+        List<Player> newPlayers = getGuardiansForPlayers(s.players);
+        //I wonder if Skaia approves of you bringing random people into the game? oh well, at least they aren't dead!
+        for (Player p in newPlayers) {
+            p.aspect = Aspects.NULL; //they were never supposed to be a hero.
+            p.chatHandle = Zalgo.generate(p.chatHandle); //i don't think this should be like this....
+            p.godDestiny = false;
+            p.grimDark = 1; //i  REALLY don't think they should be like this...
+            p.ectoBiologicalSource = -612; //they really aren't from here. (this might even prevent any guardians showing up in future ecto scenes)
+            p.renderSelf("inkBS");
+            p.land = null; //SBURB doesn't have a land for you.
+            p.guardian = null;
+        }
+        //HEY did you know that SBURB calculates grist requirements based on number of players?
+        //NO? Neither does this ink player.  And these Null players don't have lands....whoops! Hope you like playing SBURB hard mode!
+        //It's worth it to get your friends in though, right?
+        s.players.addAll(newPlayers);
+        List<String> fraymotifNames = <String>["True Friends", "Power of Friendship", "I fight for my friends!", "Care Bear Stare"];
+        int fraymotifValue = 1000 * activatingPlayer
+            .getFriends()
+            .length;
+        for (Player p in s.players) {
+            if (p.aspect != Aspects.NULL) {
+                p.setStat(Stats.SANITY, p.getStat(Stats.SANITY).abs() * 612);
+            } else {
+                p.setStat(Stats.SANITY, p.getStat(Stats.SANITY).abs() * 612 * -1); //they aren't supposed to be here. they don't get the sanity protections skaia normally distributes.
+            }
+            Fraymotif f = new Fraymotif(s.rand.pickFrom(fraymotifNames), 99);
+            f.baseValue = fraymotifValue;
+            //need to have relationship with new null players
+            p.relationships = <Relationship>[];
+            //;
+            p.generateRelationships(s.players);
+
+            for (Stat str in Stats.pickable) {
+                if (str != Stats.SANITY && str != Stats.RELATIONSHIPS) p.setStat(str, str.average(s.players)); //we all work together.
+            }
+        }
+
+
+        if(activatingPlayer.session.activatedNPCS.isNotEmpty) {
+            ret = "$ret The ${activatingPlayer} also gives an inspiring speech that convinces the ${turnArrayIntoHumanSentence(activatingPlayer.session.activatedNPCS)} to help them out.";
+            for(GameEntity g in activatingPlayer.session.activatedNPCS) {
+                activatingPlayer.session.logger.debug("adding companion $g to ink player $activatingPlayer");
                 activatingPlayer.addCompanion(g);
             }
         }

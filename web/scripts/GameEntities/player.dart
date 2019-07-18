@@ -1139,6 +1139,20 @@ class Player extends GameEntity{
         removeFromArray(guardian.class_name, session.available_classes_guardians);
         guardian.isTroll = player.isTroll;
         guardian.isSquidNow = player.isSquidNow;
+        if (guardian.isSquidNow) {
+          guardian.hair = session.rand.nextIntRange(
+              76, 80);
+          if (guardian.aspect == Aspects.BLOOD) {
+            guardian.aspect = Aspects.INK;
+          }
+        }
+        else {
+          guardian.hair = session.rand.nextIntRange(
+              1, Player.maxHairNumber);
+          if (guardian.aspect == Aspects.INK) {
+            guardian.aspect = Aspects.BLOOD;
+          }
+        }
         guardian.quirk.favoriteNumber = player.quirk.favoriteNumber;
         if (guardian.isTroll) {
             guardian.quirk = randomTrollSim(this.session.rand, guardian); //not same quirk as guardian;

@@ -458,7 +458,7 @@ class CharacterCreatorHelper {
         if (specific == "Blood")
             return "Blood players are associated with high positive relationships, as well as sanity. They are not very lucky. A Blood player is very difficult to murder, being able to insta-calm rampaging players in most cases. They are also in charge of concillitory shipping grids.";
         if (specific == "Ink")
-            return "An Inkling exclusive aspect, colors are determined by the horn number. Ink players are associated with high positive relationships, as well as mobility. They are not very lucky. An Ink player is very difficult to murder, being able to insta-calm rampaging players in most cases. They are also in charge of concillitory shipping grids.";
+            return "An Inkling exclusive aspect. Colors are determined by the horn number; with red decided by the tens place of left, blue by the ones, and green by the right horn. Ink players are associated with high positive relationships, as well as mobility. They are not very lucky. An Ink player is very difficult to murder, being able to insta-calm rampaging players in most cases. They are also in charge of concillitory shipping grids.";
         return "Aspect help text not found for " + specific + ".";
     }
 
