@@ -241,7 +241,7 @@ class GetWasted extends Scene {
         if(player.aspect == Aspects.HOPE || player.aspect == Aspects.LIGHT) return exploitFate(div);
         if(player.aspect == Aspects.RAGE || player.aspect == Aspects.MIND) return exploitTime(div);
         if(player.aspect == Aspects.SPACE || player.aspect == Aspects.VOID) return exploitGlitches(div);
-        if(player.aspect == Aspects.HEART || player.aspect == Aspects.BLOOD) return exploitFriendship(div);
+        if(player.aspect == Aspects.HEART || player.aspect == Aspects.BLOOD || player.aspect == Aspects.INK) return exploitFriendship(div);
         if(player.aspect == Aspects.LIFE || player.aspect == Aspects.DOOM) return exploitDoom(div);
         if(player.aspect == Aspects.DREAM ) return exploitAlchemy(div);
 
@@ -415,7 +415,7 @@ class GetWasted extends Scene {
     String exploitFriendship(Element div) {
         session.logger.info("AB: friendship tier3 happening.");
         String ret = "The ${player.htmlTitle()} exploits the rules of SBURB.";
-        if(player.aspect == Aspects.BLOOD) {
+        if(player.aspect == Aspects.BLOOD || player.aspect == Aspects.INK) {
             ret +=  "They find a fast, repeatable quest and organize everyone into ever-changing adventuring pairs to take advantage of the game's interaction effect bonus. ";
         }else {
             ret +=  "They find something called a 'Shipping Dunegon' and arrange everyone into various 'canon' and 'crackship' speed dates to take advantage of the game's interaction effect bonus. ";
@@ -562,7 +562,7 @@ class GetWasted extends Scene {
         if(player.aspect == Aspects.DOOM || player.aspect == Aspects.TIME)     flavorText.add("'Fate is just the choices we have yet to make.' ");
         if(player.aspect == Aspects.BREATH || player.aspect == Aspects.MIND)     flavorText.add("'Reality is written in the ink of people's lives.' ");
         if(player.aspect == Aspects.RAGE || player.aspect == Aspects.LIFE)     flavorText.add("'Knowledge and Desire are meaningless without the strengh to see them through.' ");
-        if(player.aspect == Aspects.BLOOD || player.aspect == Aspects.HEART)     flavorText.add("'When we combine the light that shines within, there is nothing we can't do.' ");
+        if(player.aspect == Aspects.BLOOD || player.aspect == Aspects.HEART || player.aspect == Aspects.INK)     flavorText.add("'When we combine the light that shines within, there is nothing we can't do.' ");
         if(flavorText.length == 1) flavorText.add("Nothing is true, everything is permitted."); //i.e. aspect not found
         flavorText.add("<BR><BR>");
         flavorText.add(processTier3(div));

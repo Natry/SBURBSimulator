@@ -81,7 +81,7 @@ class Ink extends Aspect {
 
     @override
     String activateCataclysm(Session s, Player p) {
-        return s.mutator.blood(s, p);
+        return s.mutator.ink(s, p);
     }
 
     @override

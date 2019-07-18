@@ -1602,7 +1602,7 @@ class Session {
         else if (this.sessionType > .24) {
           return "Postapoc";
         }
-        else if (this.sessionType > .4) {
+        else if (this.sessionType > .2) {
           return "Jumble";
         }
         return "Mixed";
