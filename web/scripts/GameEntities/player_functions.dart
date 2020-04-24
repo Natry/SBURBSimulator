@@ -168,6 +168,20 @@ Player randomPlayerWithClaspect(Session session, SBURBClass c, Aspect a, [Moon m
     }
     Player p = new Player(session, c, a, k, m, gd);
     p.decideTroll();
+    if (p.isSquidNow == true) {
+        p.hair = session.rand.nextIntRange(
+            76, 80);
+        if (p.aspect == Aspects.BLOOD) {
+            p.aspect = Aspects.INK;
+        }
+    }
+    else {
+        p.hair = session.rand.nextIntRange(
+            1, Player.maxHairNumber);
+        if (p.aspect == Aspects.INK) {
+            p.aspect = Aspects.BLOOD;
+        }
+    }
     p.interest1 = InterestManager.getRandomInterest(session.rand);
     p.interest2 = InterestManager.getRandomInterest(session.rand);
     p.initialize();
@@ -175,22 +189,7 @@ Player randomPlayerWithClaspect(Session session, SBURBClass c, Aspect a, [Moon m
     //no longer any randomness directly in player class. don't want to eat seeds if i don't have to.
     p.baby = session.rand.nextIntRange(1, 3);
 
-    if (p.isSquidNow == true) {
-        p.hair = session.rand.nextIntRange(
-            76, 80);
-        if (p.aspect == Aspects.BLOOD) {
-            p.aspect = Aspects.INK;
-            p.chatHandle = getRandomChatHandle(p.session.rand, p.class_name, p.aspect, p.interest1, p.interest2);
-        }
-    }
-       else {
-        p.hair = session.rand.nextIntRange(
-            1, Player.maxHairNumber);
-        if (p.aspect == Aspects.INK) {
-            p.aspect = Aspects.BLOOD;
-            p.chatHandle = getRandomChatHandle(p.session.rand, p.class_name, p.aspect, p.interest1, p.interest2);
-            }
-       } //hair color in decide troll
+     //hair color in decide troll
     p.leftHorn = session.rand.nextIntRange(1, Player.maxHornNumber);
     p.rightHorn = p.leftHorn;
     if (session.rand.nextDouble() > .7 || p.aspect == Aspects.INK) { //preference for symmetry

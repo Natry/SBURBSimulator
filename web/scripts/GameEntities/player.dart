@@ -1144,7 +1144,6 @@ class Player extends GameEntity{
               76, 80);
           if (guardian.aspect == Aspects.BLOOD) {
             guardian.aspect = Aspects.INK;
-            guardian.chatHandle = getRandomChatHandle(this.session.rand, this.class_name, this.aspect, this.interest1, this.interest2);
                 }
         }
         else {
@@ -1152,7 +1151,6 @@ class Player extends GameEntity{
               1, Player.maxHairNumber);
           if (guardian.aspect == Aspects.INK) {
             guardian.aspect = Aspects.BLOOD;
-            guardian.chatHandle = getRandomChatHandle(this.session.rand, this.class_name, this.aspect, this.interest1, this.interest2);
           }
         }
         guardian.quirk.favoriteNumber = player.quirk.favoriteNumber;
