@@ -180,6 +180,7 @@ Player randomPlayerWithClaspect(Session session, SBURBClass c, Aspect a, [Moon m
             76, 80);
         if (p.aspect == Aspects.BLOOD) {
             p.aspect = Aspects.INK;
+            p.chatHandle = getRandomChatHandle(p.session.rand, p.class_name, p.aspect, p.interest1, p.interest2);
         }
     }
        else {
@@ -187,7 +188,8 @@ Player randomPlayerWithClaspect(Session session, SBURBClass c, Aspect a, [Moon m
             1, Player.maxHairNumber);
         if (p.aspect == Aspects.INK) {
             p.aspect = Aspects.BLOOD;
-        }
+            p.chatHandle = getRandomChatHandle(p.session.rand, p.class_name, p.aspect, p.interest1, p.interest2);
+            }
        } //hair color in decide troll
     p.leftHorn = session.rand.nextIntRange(1, Player.maxHornNumber);
     p.rightHorn = p.leftHorn;
